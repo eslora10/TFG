@@ -33,17 +33,20 @@ class UniformRandomStrategy(Strategy):
 
 if __name__ == "__main__":
     from splitter import TimestampSplitter
+    import time
+    ini = time.time()
     spl = TimestampSplitter("../data/interactions-graph-200tweets_100.tsv", 1307039324000)
     # spl = TimestampSplitter("../data/prueba.tsv", 4)
     s = UniformRandomStrategy(spl)
     print('--------TRAIN SET--------')
-    print( spl.train )
+    # print( spl.train )
     print( len( spl.train ) )
     print( spl.train_len )
     print('--------TEST SET--------')
-    print( spl.test )
+    # print( spl.test )
     print( len( spl.test ) )
     print( spl.test_len )
     print('--------RECOMENDATION--------')
-    print( s.process(10) )
+    # print( s.process(10) )
     print( len( s.process(10)) )
+    print ( time.time()-ini )
