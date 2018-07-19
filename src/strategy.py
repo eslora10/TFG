@@ -53,7 +53,9 @@ class UniformRandomStrategy(Strategy):
 
 if __name__ == "__main__":
     from splitter import TimestampSplitter
-    spl = TimestampSplitter("../data/interactions-graph-200tweets.tsv", 1307039324000)
+    import time
+    ini = time.time()
+    spl = TimestampSplitter("../data/interactions-graph-200tweets_100.tsv", 1307039324000)
     # spl = TimestampSplitter("../data/prueba.tsv", 4)
     s = UniformRandomStrategy(spl)
     print('--------TRAIN SET--------')
@@ -67,3 +69,4 @@ if __name__ == "__main__":
     print('--------RECOMENDATION--------')
     # print( s.process(10) )
     print( len( s.process(10)) )
+    print ( time.time()-ini )
