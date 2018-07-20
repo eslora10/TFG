@@ -45,13 +45,13 @@ class TimestampSplitter(Splitter):
                     except KeyError:
                         self.train[user1] = set([user2])
 
-                    if user2 not in self.train.keys():
+                    if user2 not in self.train:
                         self.train[user2] = set()
 
-                    if user2 not in self.test.keys():
+                    if user2 not in self.test:
                         self.test[user2] = set()
 
-                    if user1 not in self.test.keys():
+                    if user1 not in self.test:
                         self.test[user1] = set()
                     # try:
                     #     self.train_r[user2].add(user1)
@@ -61,23 +61,23 @@ class TimestampSplitter(Splitter):
 
                 # If the line does't match the timestamp we add it to the test
                 # set
-                elif (user1 not in self.train.keys() or user2 not in self.train[user1])\
-                and (user2 not in self.train.keys() or user1 not in self.train[user2])\
-                and (user2 not in self.test.keys() or user1 not in self.test[user2]):
+                elif (user1 not in self.train or user2 not in self.train[user1])\
+                and (user2 not in self.train or user1 not in self.train[user2])\
+                and (user2 not in self.test or user1 not in self.test[user2]):
                     # TODO
                     try:
                         self.test[user1].add(user2)
                     except KeyError:
                         self.test[user1] = set([user2])
-                        self.test_len+=1
+        #                self.test_len+=1
 
-                    if user2 not in self.test.keys():
+                    if user2 not in self.test:
                         self.test[user2] = set()
 
-                    if user2 not in self.train.keys():
+                    if user2 not in self.train:
                         self.train[user2] = set()
 
-                    if user1 not in self.train.keys():
+                    if user1 not in self.train:
                         self.train[user1] = set()
                     # try:
                     #     self.test_r[user2].add(user1)
@@ -115,33 +115,35 @@ class RandomSplitter(Splitter):
                     except KeyError:
                         self.train[user1] = set([user2])
 
-                    if user2 not in self.train.keys():
+                    if user2 not in self.train:
                         self.train[user2] = set()
 
-                    if user2 not in self.test.keys():
+                    if user2 not in self.test:
                         self.test[user2] = set()
 
-                    if user1 not in self.test.keys():
+                    if user1 not in self.test:
                         self.test[user1] = set()
 
-                elif (user1 not in self.train.keys() or user2 not in self.train[user1])\
-                and (user2 not in self.train.keys() or user1 not in self.train[user2])\
-                and (user2 not in self.test.keys() or user1 not in self.test[user2]):
+                elif (user1 not in self.train or user2 not in self.train[user1])\
+                and (user2 not in self.train or user1 not in self.train[user2])\
+                and (user2 not in self.test or user1 not in self.test[user2]):
                     # TODO
                     try:
                         self.test[user1].add(user2)
                     except KeyError:
                         self.test[user1] = set([user2])
 
-                    if user2 not in self.test.keys():
+                    if user2 not in self.test:
                         self.test[user2] = set()
 
-                    if user2 not in self.train.keys():
+                    if user2 not in self.train:
                         self.train[user2] = set()
 
-                    if user1 not in self.train.keys():
+                    if user1 not in self.train:
                         self.train[user1] = set()
         self.data.close()
+        self.train_len = sum([1 for s in self.train.values() if len(s) != 0])
+        self.test_len = sum([1 for s in self.test.values() if len(s) != 0])
 
 if __name__ == "__main__":
     spl = TimestampSplitter("../data/interactions-graph-200tweets_100.tsv", 1310147215000)

@@ -16,32 +16,24 @@ class Strategy(object):
     def process(self, k):
         test_p = {}
         weights = self.strategy()
-        for user in weights.keys():
-            # weights[user].sort(key=lambda x: x[1], reverse=True)
-            # test_p[user] = set( user2[1] for user2 in weights[user][:k] )
-            # test_p[user] = hq.nlargest(k, weights[user])
-            test_p[user] = set(user2 for user2 in sorted(weights[user])[:k] )
+        for user in weights:
+            test_p[user] = set(user2[1] for user2 in sorted(weights[user])[:k] )
         return test_p
 
 class UniformRandomStrategy(Strategy):
-    """    def strategy(self):
-            weights = {}
-            for user1 in self.splitter.train.keys():
-                weights[user1] = []
-                for user2 in self.splitter.train.keys():
-                    if user1 != user2:
-                        weights[user1].append((user2, np.random.uniform()))
-            return weights
     """
+    """
+
     def strategy(self):
         ini = time.time()
         weights = {}
-        train_set = self.splitter.train.keys()
+        train_set = self.splitter.train
         for user1 in train_set:
             i = 0
             weights[user1] = []
             for user2 in train_set:
-                if user1 != user2: #TODO: add the neighbours condition
+                # if user1 != user2: #TODO: add the neighbours condition
+                if user2 not in train_set[user1] and user1 not in train_set[user2]:
                     pair = ( np.random.uniform(), user2)
                     if i < self.HEAP_SIZE:
                         hq.heappush(weights[user1], pair)
@@ -58,8 +50,9 @@ class UniformRandomStrategy(Strategy):
 if __name__ == "__main__":
     from splitter import TimestampSplitter, RandomSplitter
     import time
-    # spl = RandomSplitter("../data/antonio.tsv", 0.2)
-    spl = TimestampSplitter("../data/interactions-graph-200tweets.tsv", 1357685061000)
+    from evaluation import Evaluation
+    spl = RandomSplitter("../data/interactions-graph-200tweets_100.tsv", 0.1)
+    # spl = TimestampSplitter("../data/interactions-graph-200tweets_100.tsv",1300391825000)
     s = UniformRandomStrategy(spl)
     print('--------TRAIN SET--------')
     # print( spl.train )
@@ -69,7 +62,10 @@ if __name__ == "__main__":
     # print( spl.test )
     print( len( spl.test ) )
     print( spl.test_len )
-    print('--------RECOMENDATION--------')
+    print('--------RECOMMENDATION--------')
     # print( s.process(10) )
     reco = s.process(10)
     print( len(reco) )
+    ev = Evaluation(spl.test, reco)
+    print("PRECISION: "+str( ev.precision ))
+    print("RECALL: "+str( ev.recall) )
