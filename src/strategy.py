@@ -32,7 +32,7 @@ class UniformRandomStrategy(Strategy):
             i = 0
             weights[user1] = []
             for user2 in train_set:
-                # if user1 != user2: #TODO: add the neighbours condition
+                # Checks if both users aren't neighbours in the train set.
                 if user2 not in train_set[user1] and user1 not in train_set[user2]:
                     pair = ( np.random.uniform(), user2)
                     if i < self.HEAP_SIZE:
@@ -51,17 +51,19 @@ if __name__ == "__main__":
     from splitter import TimestampSplitter, RandomSplitter
     import time
     from evaluation import Evaluation
-    spl = RandomSplitter("../data/interactions-graph-200tweets_100.tsv", 0.1)
-    # spl = TimestampSplitter("../data/interactions-graph-200tweets_100.tsv",1300391825000)
+    from addition import TopKAddition
+
+    # spl = RandomSplitter("../data/interactions-graph-200tweets_100.tsv", 0.1)
+    spl = TimestampSplitter("../data/interactions-graph-200tweets.tsv",1300391825000)
     s = UniformRandomStrategy(spl)
     print('--------TRAIN SET--------')
     # print( spl.train )
-    print( len( spl.train ) )
     print( spl.train_len )
     print('--------TEST SET--------')
     # print( spl.test )
-    print( len( spl.test ) )
     print( spl.test_len )
+    print('--------TOTAL--------')
+    print( spl.train_len + spl.test_len )
     print('--------RECOMMENDATION--------')
     # print( s.process(10) )
     reco = s.process(10)

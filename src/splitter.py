@@ -84,8 +84,9 @@ class TimestampSplitter(Splitter):
                     # except:
                     #     self.test_r[user2] = set( [ user1 ] )
         self.data.close()
-        self.train_len = sum([1 for s in self.train.values() if len(s) != 0])
-        self.test_len = sum([1 for s in self.test.values() if len(s) != 0])
+        self.train_len = sum([len(s) for s in self.train.values()])
+        self.test_len = sum([len(s) for s in self.test.values()])
+
 class RandomSplitter(Splitter):
     """
 
@@ -142,8 +143,8 @@ class RandomSplitter(Splitter):
                     if user1 not in self.train:
                         self.train[user1] = set()
         self.data.close()
-        self.train_len = sum([1 for s in self.train.values() if len(s) != 0])
-        self.test_len = sum([1 for s in self.test.values() if len(s) != 0])
+        self.train_len = sum([len(s) for s in self.train.values()])
+        self.test_len = sum([len(s) for s in self.test.values()])
 
 if __name__ == "__main__":
     spl = TimestampSplitter("../data/interactions-graph-200tweets_100.tsv", 1310147215000)
