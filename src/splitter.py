@@ -146,6 +146,8 @@ class RandomSplitter(Splitter):
         self.train_len = sum([len(s) for s in self.train.values()])
         self.test_len = sum([len(s) for s in self.test.values()])
 
+#TODO: Nuevo splitter que parta el train y el test segun una proporcion exacta dada
+
 if __name__ == "__main__":
     spl = TimestampSplitter("../data/interactions-graph-200tweets_100.tsv", 1310147215000)
     # spl = TimestampSplitter("../data/prueba.tsv", 3)
