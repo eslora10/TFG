@@ -53,6 +53,7 @@ if __name__ == "__main__":
     from evaluation import Evaluation
     from addition import TopKAddition
 
+    i=0
     # spl = RandomSplitter("../data/interactions-graph-200tweets_100.tsv", 0.1)
     spl = TimestampSplitter("../data/interactions-graph-200tweets.tsv", 1357685061000)
     # spl = TimestampSplitter("../data/interactions-graph-200tweets_100.tsv",1310147215000 )
@@ -61,6 +62,8 @@ if __name__ == "__main__":
     ev = Evaluation(spl.test_len_ini,k )
     ad = TopKAddition()
     before = 0
+    pr = open("../data/precision.txt", "a")
+    rc = open("../data/recall.txt", "a")
     while before != spl.train_len:
         # print('--------TRAIN SET--------')
         # print( spl.train )
@@ -75,8 +78,8 @@ if __name__ == "__main__":
         reco = s.process(k)
         # print( len(reco) )
         ev.evaluate(spl.test, reco)
-        print("PRECISION: %f " % ev.precision)
-        print("RECALL: %f" % ev.recall )
-
-
+        print("%d\t%f " % ( i, ev.precision ), file=pr)
+        print("%d\t%f " % ( i, ev.recall ), file=rc)
+        i+=1
+        print(i)
         ad.add(spl, reco)
