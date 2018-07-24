@@ -1,2 +1,3 @@
+*.txt
 *.pdf
 src/__pycache__/*

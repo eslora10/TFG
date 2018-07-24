@@ -54,11 +54,14 @@ if __name__ == "__main__":
     from addition import TopKAddition
 
     # spl = RandomSplitter("../data/interactions-graph-200tweets_100.tsv", 0.1)
-    # spl = TimestampSplitter("../data/interactions-graph-200tweets.tsv", 1357685061000)
-    spl = TimestampSplitter("../data/interactions-graph-200tweets_100.tsv",1310147215000 )
+    spl = TimestampSplitter("../data/interactions-graph-200tweets.tsv", 1357685061000)
+    # spl = TimestampSplitter("../data/interactions-graph-200tweets_100.tsv",1310147215000 )
+    k = 10
+    s = UniformRandomStrategy(spl)
+    ev = Evaluation(spl.test_len_ini,k )
+    ad = TopKAddition()
     before = 0
     while before != spl.train_len:
-        s = UniformRandomStrategy(spl)
         # print('--------TRAIN SET--------')
         # print( spl.train )
         # print( spl.train_len )
@@ -69,11 +72,11 @@ if __name__ == "__main__":
         # print('--------TOTAL--------')
         # print( spl.train_len + spl.test_len )
         # print('--------RECOMMENDATION--------')
-        reco = s.process(10)
+        reco = s.process(k)
         # print( len(reco) )
-        ev = Evaluation(spl.test, reco, spl.test_len_ini,10 )
+        ev.evaluate(spl.test, reco)
         print("PRECISION: %f " % ev.precision)
         print("RECALL: %f" % ev.recall )
 
 
-        ad = TopKAddition(spl, reco)
+        ad.add(spl, reco)

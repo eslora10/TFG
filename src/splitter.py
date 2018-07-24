@@ -7,26 +7,41 @@ class Splitter(object):
 
     train = {}
     train_len = 0
+    train_len_ini = {}
     # train_r = {}
     test = {}
     test_len = 0
+    test_len_ini = {}
     # test_r = {}
 
-    def __init__(self, datapath):
+    def __init__(self, datapath, arg):
 
         self.data = open(datapath, 'r')
+
+        # Removes the data head
+        self.data.readline()
+
+        self.split(arg)
+
+        self.train_len = sum([len(s) for s in self.train.values()])
+        self.test_len = sum([len(s) for s in self.test.values()])
+
+        for user in self.train:
+            self.train_len_ini[user] = len(self.train[user])
+            self.test_len_ini[user] = len(self.test[user])
+
+        self.data.close()
+
+    def split(self, arg):
+        pass
 
 class TimestampSplitter(Splitter):
     """
 
     """
-    def __init__(self, datapath, timestamp):
+    def split(self, timestamp):
 
-        super().__init__(datapath)
         self.timestamp = timestamp
-
-        # Removes the data head
-        self.data.readline()
 
         # Start reading the data file line by line
         for line in self.data:
@@ -83,21 +98,14 @@ class TimestampSplitter(Splitter):
                     #     self.test_r[user2].add(user1)
                     # except:
                     #     self.test_r[user2] = set( [ user1 ] )
-        self.data.close()
-        self.train_len = sum([len(s) for s in self.train.values()])
-        self.test_len = sum([len(s) for s in self.test.values()])
 
 class RandomSplitter(Splitter):
     """
 
     """
-    def __init__(self, datapath, p):
+    def split(self, p):
 
-        super().__init__(datapath)
         self.p = p
-
-        # Removes the data head
-        self.data.readline()
 
         # Start reading the data file line by line
         for line in self.data:
@@ -142,14 +150,11 @@ class RandomSplitter(Splitter):
 
                     if user1 not in self.train:
                         self.train[user1] = set()
-        self.data.close()
-        self.train_len = sum([len(s) for s in self.train.values()])
-        self.test_len = sum([len(s) for s in self.test.values()])
 
 #TODO: Nuevo splitter que parta el train y el test segun una proporcion exacta dada
 
 if __name__ == "__main__":
-    spl = TimestampSplitter("../data/interactions-graph-200tweets_100.tsv", 1310147215000)
+    spl = TimestampSplitter("../data/interactions-graph-200tweets.tsv", 1357685061000)
     # spl = TimestampSplitter("../data/prueba.tsv", 3)
     # spl = RandomSplitter("../data/interactions-graph-200tweets.tsv", 0.2)
     print ("TRAIN SET:")
