@@ -9,23 +9,13 @@ class Addition(object):
     def run(self, splitter, recommendation):
         pass
 
-class TopKAddition(Addition):
-    """
-    """
-    def run(self, splitter, recommendation):
-        # For each user we get the interactions set. For the train set,
-        # we add all top k interactions the recommendation has given.
-        # For the test set we remove them.
-        for user1 in splitter.train:
-            splitter.train[user1] = splitter.train[user1].union(recommendation[user1])
-            splitter.test[user1] = splitter.test[user1].difference(recommendation[user1])
-
-
 class HitAddition(Addition):
     """
     """
     def run(self, splitter, recommendation):
         for user1 in splitter.train:
-            T_R = splitter.test[user1].intersection(recommendation[user1])
-            splitter.train[user1] = splitter.train[user1].union(T_R)
-            splitter.test[user1] = splitter.test[user1].difference(T_R)
+            hits = splitter.test[user1].intersection(recommendation[user1])
+            misses = recommendation[user1].difference(hits)
+            splitter.train[user1] = splitter.train[user1].union(hits)
+            splitter.test[user1] = splitter.test[user1].difference(hits)
+            splitter.train_miss[user1] = splitter.train_miss[user1].union(misses)

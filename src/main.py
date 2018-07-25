@@ -16,10 +16,8 @@ if __name__ == "__main__":
     ev = Evaluation(spl.test_len_ini,k )
     ad = HitAddition()
     before = 0
-    pr = open("../results/precision.txt", "a")
-    rc = open("../results/recall.txt", "a")
-    hit = open("../results/hits.txt", "a")
-    cov = open("../results/coverage.txt", "a")
+    pr = open("../results/07-25-18_random.txt", "w")
+    pr.write("iteration\tprecision\trecall\thits\tcoverage\n")
     # while before != spl.train_len:
     for i in range(1000):
         # print('--------TRAIN SET--------')
@@ -38,9 +36,6 @@ if __name__ == "__main__":
         # print( len(reco) )
         ev.evaluate(spl.test, reco)
         print(i)
-        print("%d\t%f " % ( i, ev.precision ), file=pr)
-        print("%d\t%f " % ( i, ev.recall ), file=rc)
-        print("%d\t%d " % ( i, ev.hits ), file=hit)
-        print("%d\t%f " % ( i, ev.coverage ), file=cov)
+        pr.write("%d\t%f\t%f\t%d\t%f\n" % ( i, ev.precision, ev.recall,ev.hits,ev.coverage ))
         # i+=1
         ad.add(spl, reco)

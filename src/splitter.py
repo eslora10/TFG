@@ -6,12 +6,13 @@ class Splitter(object):
     """
 
     train = {}
+    train_miss = {}
     train_len = 0
     train_len_ini = {}
     # train_r = {}
     test = {}
     test_len = 0
-    test_len_ini = {}
+    test_len_ini = 0
     # test_r = {}
 
     def __init__(self, datapath, arg):
@@ -25,10 +26,10 @@ class Splitter(object):
 
         self.train_len = sum([len(s) for s in self.train.values()])
         self.test_len = sum([len(s) for s in self.test.values()])
+        self.test_len_ini = self.test_len
 
         for user in self.train:
-            self.train_len_ini[user] = len(self.train[user])
-            self.test_len_ini[user] = len(self.test[user])
+            self.train_miss[user] = set()
 
         self.data.close()
 
