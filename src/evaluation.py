@@ -9,6 +9,7 @@ class Evaluation(object):
         self.hits = 0
         self.coverage = 0
         num_users = 0
+        len_reco = 0
 
         for user1 in test:
             num_users+=1

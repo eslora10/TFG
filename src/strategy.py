@@ -17,7 +17,10 @@ class Strategy(object):
         test_p = {}
         weights = self.strategy()
         for user in weights:
-            test_p[user] = set(user2[1] for user2 in sorted(weights[user])[:k] )
+            l = []
+            while len( weights[user] ) != 0:
+                l.insert(0,hq.heappop(weights[user])[1])
+            test_p[user] = set(l[:k])
         return test_p
 
 class UniformRandomStrategy(Strategy):
@@ -33,7 +36,8 @@ class UniformRandomStrategy(Strategy):
             weights[user1] = []
             for user2 in train_set:
                 # Checks if both users aren't neighbours in the train set.
-                if ( user2 not in train_set[user1] and user1 not in train_set[user2] ) and (user1 != user2) and (user2 not in self.splitter.train_miss[user1]):
+                if ( user2 not in train_set[user1] and user1 not in train_set[user2] )\
+                   and (user1 != user2) and (user2 not in self.splitter.train_miss[user1]):
                     pair = ( np.random.uniform(), user2)
                     if i < self.HEAP_SIZE:
                         hq.heappush(weights[user1], pair)
@@ -42,4 +46,35 @@ class UniformRandomStrategy(Strategy):
                         if pair[0] >= weights[user1][0][0]:
                             hq.heappushpop(weights[user1],pair)
         # print ("TIME: %s" % ( time.time()-ini ) )
+        return weights
+
+class MostFamousStrategy(Strategy):
+    """
+    """
+
+    def strategy(self):
+        # First we get each user number of interactions and we sort them
+        # in reverse order
+        ranking = [  ]
+        i = 0
+        weights = {}
+        train_r = self.splitter.train_r
+        train_set = self.splitter.train
+
+        for user in train_r:
+            pair = (len(self.splitter.train_r[user]), user)
+            if i < self.HEAP_SIZE:
+                hq.heappush(ranking, pair)
+                i+=1
+            else:
+                if pair[0] >= ranking[0][0]:
+                    hq.heappushpop(ranking,pair)
+        # For each user we get the recommended list excluding its neighbours
+        for user1 in train_set:
+            weights[user1] = []
+            for pair in ranking:
+                user2 = pair[1]
+                if ( user2 not in train_set[user1] and user1 not in train_set[user2] )\
+                   and (user1 != user2) and (user2 not in self.splitter.train_miss[user1]):
+                    weights[user1].append(pair)
         return weights
