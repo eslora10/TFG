@@ -1,0 +1,2 @@
+iteration	precision	recall	hits	coverage
+0	0.009835	0.045467	982	1.000000
