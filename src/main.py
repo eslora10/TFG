@@ -10,11 +10,11 @@ if __name__ == "__main__":
     # spl = RandomSplitter("../data/interactions-graph-200tweets_100.tsv", 0.1)
     # spl = TimestampSplitter("../data/interactions-graph-200tweets_100k.tsv", 1357685061000)
     # spl = TimestampSplitter("../data/interactions-graph-200tweets.tsv", 1357685061000)
-    spl = TwoFileSplitter("../data/sbs200-inter-train.txt", "../data/sbs200-inter-test.txt")
+    # spl = TwoFileSplitter("../data/sbs200-inter-train.txt", "../data/sbs200-inter-test.txt")
     # spl = TimestampSplitter("../data/interactions-graph-200tweets_100.tsv",1310147215000 )
     k = 10
-    # s = UniformRandomStrategy(spl)
-    s = MostFamousStrategy(spl)
+    s = UniformRandomStrategy(spl)
+    # s = MostFamousStrategy(spl)
     ev = Evaluation(spl.test_len_ini,k )
     ad = HitAddition()
     before = 0
@@ -22,12 +22,12 @@ if __name__ == "__main__":
     pr.write("iteration\tprecision\trecall\thits\tcoverage\n")
     # while before != spl.train_len:
     for i in range(1000):
-        print('--------TRAIN SET--------')
+        # print('--------TRAIN SET--------')
         # print( spl.train )
-        print( spl.train_len )
+        # print( spl.train_len )
         before = spl.train_len
-        print('--------TEST SET--------')
-        print( spl.test_len )
+        # print('--------TEST SET--------')
+        # print( spl.test_len )
         # print( spl.test )
         # print('--------MISSES--------')
         #  print( spl.train_miss )
