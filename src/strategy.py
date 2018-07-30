@@ -1,4 +1,5 @@
 import numpy as np
+import time
 import heapq as hq
 
 class Strategy(object):
@@ -28,7 +29,7 @@ class UniformRandomStrategy(Strategy):
     """
 
     def strategy(self):
-        # ini = time.time()
+        ini = time.time()
         weights = {}
         train_set = self.splitter.train
         for user1 in train_set:
@@ -38,14 +39,14 @@ class UniformRandomStrategy(Strategy):
                 # Checks if both users aren't neighbours in the train set.
                 if ( user2 not in train_set[user1] and user1 not in train_set[user2] )\
                    and (user1 != user2) and (user2 not in self.splitter.train_miss[user1]):
-                    pair = ( np.random.uniform(), user2)
+                    pair = ( np.random.random(), user2)
                     if i < self.HEAP_SIZE:
                         hq.heappush(weights[user1], pair)
                         i+=1
                     else:
                         if pair[0] >= weights[user1][0][0]:
                             hq.heappushpop(weights[user1],pair)
-        # print ("TIME: %s" % ( time.time()-ini ) )
+        print ("TIME: %s" % ( time.time()-ini ) )
         return weights
 
 class MostFamousStrategy(Strategy):

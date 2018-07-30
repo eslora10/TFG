@@ -1,7 +1,6 @@
 
 if __name__ == "__main__":
-    from splitter import TimestampSplitter, RandomSplitter
-    import time
+    from splitter import TimestampSplitter, RandomSplitter, PercentageSplitter
     from evaluation import Evaluation
     from addition import HitAddition
     from strategy import UniformRandomStrategy, MostFamousStrategy
@@ -11,9 +10,10 @@ if __name__ == "__main__":
     # spl = TimestampSplitter("../data/interactions-graph-200tweets_100k.tsv", 1357685061000)
     # spl = TimestampSplitter("../data/interactions-graph-200tweets.tsv", 1357685061000)
     # spl = TimestampSplitter("../data/interactions-graph-200tweets_100.tsv",1310147215000 )
+    spl = PercentageSplitter("../data/interactions-graph-200tweets.tsv", 0.2)
     k = 10
-    # s = UniformRandomStrategy(spl)
-    s = MostFamousStrategy(spl)
+    s = UniformRandomStrategy(spl)
+    # s = MostFamousStrategy(spl)
     ev = Evaluation(spl.test_len_ini,k )
     ad = HitAddition()
     before = 0
