@@ -8,14 +8,49 @@ class Splitter(object):
     train = {}
     train_miss = {}
     train_len = 0
-    train_len_p = 0
     train_len_ini = {}
     train_r = {}
     test = {}
     test_len = 0
     test_len_p = 0
+    train_len_p = 0
     test_len_ini = 0
     test_r = {}
+
+    def addItem(self, user, item, destination_set):
+        if destination_set == "train":
+            set1 = self.train
+            set2 = self.test
+            length = self.train_len
+            set1_r = self.train_r
+        else:
+            set1 = self.test
+            set2 = self.train
+            length = self.test_len
+            set1_r = self.test_r
+
+
+        try:
+            if item not in set1[user]:
+                set1[user].add(item)
+                length+=1
+        except KeyError:
+            set1[user] = set([item])
+            length+=1
+
+        if item not in set1:
+            set1[item] = set()
+
+        if item not in set2:
+            set2[item] = set()
+
+        if user not in set2:
+            set2[user] = set()
+        try:
+            set1_r[item].add(user)
+        except:
+            set1_r[item] = set( [ user ] )
+        return length
 
     def __init__(self, datapath, arg):
 
@@ -32,56 +67,54 @@ class Splitter(object):
             user2 = int( inter[1] )
             if user1 != user2:
 
-                # If the line matches our timestamp we add the interaction to our
-                # train set
                 if self.condition(arg, int(inter[2])):
+                    self.train_len = self.addItem(user1, user2, "train")
+#                    try:
+#                        if user2 not in self.train[user1]:
+#                            self.train[user1].add(user2)
+#                            self.train_len+=1
+#                    except KeyError:
+#                        self.train[user1] = set([user2])
+#                        self.train_len+=1
+#
+#                    if user2 not in self.train:
+#                        self.train[user2] = set()
+#
+#                    if user2 not in self.test:
+#                        self.test[user2] = set()
+#
+#                    if user1 not in self.test:
+#                        self.test[user1] = set()
+#                    try:
+#                        self.train_r[user2].add(user1)
+#                    except:
+#                        self.train_r[user2] = set( [ user1 ] )
+#
 
-                    try:
-                        self.train[user1].add(user2)
-                    except KeyError:
-                        self.train[user1] = set([user2])
-                    self.train_len_p+=1
-                    if user2 not in self.train:
-                        self.train[user2] = set()
-
-                    if user2 not in self.test:
-                        self.test[user2] = set()
-
-                    if user1 not in self.test:
-                        self.test[user1] = set()
-                    try:
-                        self.train_r[user2].add(user1)
-                    except:
-                        self.train_r[user2] = set( [ user1 ] )
-
-
-                # If the line does't match the timestamp we add it to the test
-                # set
                 elif (user1 not in self.train or user2 not in self.train[user1])\
                 and (user2 not in self.train or user1 not in self.train[user2])\
                 and (user2 not in self.test or user1 not in self.test[user2]):
-                    try:
-                        self.test[user1].add(user2)
-                    except KeyError:
-                        self.test[user1] = set([user2])
-        #                self.test_len+=1
-
-                    self.test_len_p+=1
-                    if user2 not in self.test:
-                        self.test[user2] = set()
-
-                    if user2 not in self.train:
-                        self.train[user2] = set()
-
-                    if user1 not in self.train:
-                        self.train[user1] = set()
-                    try:
-                        self.test_r[user2].add(user1)
-                    except:
-                        self.test_r[user2] = set( [ user1 ] )
-
-        self.train_len = sum([len(s) for s in self.train.values()])
-        self.test_len = sum([len(s) for s in self.test.values()])
+                    self.test_len = self.addItem(user1, user2, "test")
+#                    try:
+#                        if user2 not in self.test[user1]:
+#                            self.test[user1].add(user2)
+#                            self.test_len+=1
+#                    except KeyError:
+#                        self.test[user1] = set([user2])
+#                        self.test_len+=1
+#                    if user2 not in self.test:
+#                        self.test[user2] = set()
+#
+#                    if user2 not in self.train:
+#                        self.train[user2] = set()
+#
+#                    if user1 not in self.train:
+#                        self.train[user1] = set()
+#                    try:
+#                        self.test_r[user2].add(user1)
+#                    except:
+#                        self.test_r[user2] = set( [ user1 ] )
+#
         self.test_len_ini = self.test_len
 
         for user in self.train:
@@ -90,7 +123,7 @@ class Splitter(object):
         self.data.close()
 
     def condtion(self, arg1, arg2):
-        return true
+        return True
 
 class TimestampSplitter(Splitter):
     """
@@ -105,72 +138,23 @@ class RandomSplitter(Splitter):
     def condition(self, p, arg):
         return np.random.binomial(1, p)
 
-#TODO: Nuevo splitter que parta el train y el test segun una proporcion exacta dada
-
-class TwoFileSplitter(Splitter):
-
-    def split(self, test_path):
-        train = self.data
-        test = open(test_path, 'r')
-        test.readline()
-
-        for line in test:
-            inter = line.split('\t')
-            user1 = int( inter[0] )
-            user2 = int( inter[1] )
-            try:
-                self.test[user1].add(user2)
-            except KeyError:
-                self.test[user1] = set([user2])
-
-            if user2 not in self.test:
-                self.test[user2] = set()
-
-            if user2 not in self.train:
-                self.train[user2] = set()
-
-            if user1 not in self.train:
-                self.train[user1] = set()
-
-            try:
-                self.test_r[user2].add(user1)
-            except:
-                self.test_r[user2] = set( [ user1 ] )
-
-        for line in train:
-            inter = line.split('\t')
-            user1 = int( inter[0] )
-            user2 = int( inter[1] )
-            if user1 != user2:
-                try:
-                    self.train[user1].add(user2)
-                except KeyError:
-                    self.train[user1] = set([user2])
-
-                if user2 not in self.train:
-                    self.train[user2] = set()
-
-                if user2 not in self.test:
-                    self.test[user2] = set()
-
-                if user1 not in self.test:
-                    self.test[user1] = set()
-                try:
-                    self.train_r[user2].add(user1)
-                except:
-                    self.train_r[user2] = set( [ user1 ] )
-        test.close()
-
+class PercentageSplitter(Splitter):
+    """
+    """
+    def condition(self, p, arg):
+        try:
+            return self.train_len/(self.test_len+self.train_len) < p
+        except ZeroDivisionError:
+            return True
 
 if __name__ == "__main__":
-    # spl = TimestampSplitter("../data/interactions-graph-200tweets.tsv", 1357685061000)
+    # spl = TimestampSplitter("../data/interactions-graph-200tweets_100.tsv",1277496627000 )
+    spl = PercentageSplitter("../data/interactions-graph-200tweets.tsv",0.2)
     # spl = TimestampSplitter("../data/prueba.tsv", 3)
-    spl = RandomSplitter("../data/interactions-graph-200tweets_100.tsv", 0.2)
+    # spl = RandomSplitter("../data/interactions-graph-200tweets_100.tsv", 0.2)
     print ("TRAIN SET:")
-    print (spl.train)
+    # print (spl.train)
     print (spl.train_len)
-    print (spl.train_len_p)
     print ("TEST SET:")
-    print (spl.train)
+    # print (spl.test)
     print (spl.test_len)
-    print (spl.test_len_p)

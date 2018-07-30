@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import sys
 
 def plot(path):
     X = []
@@ -27,4 +28,6 @@ def plot(path):
     plt.show()
 
 
-plot("../results/07-25-18_random.txt")
+plot(sys.argv[1])
+
+
