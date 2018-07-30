@@ -29,7 +29,6 @@ class UniformRandomStrategy(Strategy):
     """
 
     def strategy(self):
-        ini = time.time()
         weights = {}
         train_set = self.splitter.train
         for user1 in train_set:
@@ -46,10 +45,9 @@ class UniformRandomStrategy(Strategy):
                     else:
                         if pair[0] >= weights[user1][0][0]:
                             hq.heappushpop(weights[user1],pair)
-        print ("TIME: %s" % ( time.time()-ini ) )
         return weights
 
-class MostFamousStrategy(Strategy):
+class PopularityStrategy(Strategy):
     """
     """
 

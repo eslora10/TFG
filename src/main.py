@@ -3,7 +3,7 @@ if __name__ == "__main__":
     from splitter import TimestampSplitter, RandomSplitter, PercentageSplitter
     from evaluation import Evaluation
     from addition import HitAddition
-    from strategy import UniformRandomStrategy, MostFamousStrategy
+    from strategy import UniformRandomStrategy, PopularityStrategy
 
     # i=0
     # spl = RandomSplitter("../data/interactions-graph-200tweets_100.tsv", 0.1)
@@ -13,7 +13,7 @@ if __name__ == "__main__":
     spl = PercentageSplitter("../data/interactions-graph-200tweets.tsv", 0.2)
     k = 10
     s = UniformRandomStrategy(spl)
-    # s = MostFamousStrategy(spl)
+    #s = PopularityStrategy(spl)
     ev = Evaluation(spl.test_len_ini,k )
     ad = HitAddition()
     before = 0
