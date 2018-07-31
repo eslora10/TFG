@@ -17,5 +17,9 @@ class HitAddition(Addition):
             hits = splitter.test[user1].intersection(recommendation[user1])
             misses = recommendation[user1].difference(hits)
             splitter.train[user1] = splitter.train[user1].union(hits)
+            for item in hits:
+                splitter.train_r[item].add(user1)
             splitter.test[user1] = splitter.test[user1].difference(hits)
+            for item in hits:
+                splitter.test_r[item].remove(user1)
             splitter.train_miss[user1] = splitter.train_miss[user1].union(misses)

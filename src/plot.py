@@ -1,14 +1,13 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import sys
 
-def plot(path):
+def plot(path, fig, prec, rec):
     X = []
     precision = [0]
     recall = [0]
     sum_hits = [0]
     coverage = []
-    with open(path, 'r') as f:
+    with open("../results/07-30-18_"+path+".txt", 'r') as f:
         f.readline()
         for line in f:
             data = line.split("\t")
@@ -18,16 +17,19 @@ def plot(path):
             # hits.append(int(data[3]))
             sum_hits.append(sum_hits[-1]+int(data[3]))
             coverage.append(float(data[4]))
-    fig, ( ax1, ax2 ) = plt.subplots(2,1)
-    ax1.plot(X,precision[1:], label="Precision")
-    ax1.plot(X,recall[1:], label="Recall")
-    ax1.legend(loc=1)
-    # ax2.plot(X,hits, label="Hits")
-    ax2.plot(X, sum_hits[1:], label="Sum hits")
-    ax2.legend(loc=1)
-    plt.show()
+    prec.plot(X,precision[1:], label=path)
+    prec.legend(loc=1)
+    prec.set_ylabel("Cumulated precision")
+    prec.set_xlabel("t")
+    # rec.plot(X,hits, label="Hits")
+    rec.plot(X,recall[1:], label=path)
+    rec.set_ylabel("Cumulated recall")
+    rec.set_xlabel("t")
+    rec.legend(loc=1)
 
-
-plot(sys.argv[1])
+fig, ( prec, rec ) = plt.subplots(2,1)
+for f in ["random","popularity"]:
+    plot(f, fig, prec, rec)
+plt.show()
 
 

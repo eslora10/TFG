@@ -12,15 +12,15 @@ if __name__ == "__main__":
     # spl = TimestampSplitter("../data/interactions-graph-200tweets_100.tsv",1310147215000 )
     spl = PercentageSplitter("../data/interactions-graph-200tweets.tsv", 0.2)
     k = 10
-    s = UniformRandomStrategy(spl)
-    #s = PopularityStrategy(spl)
+    #s = UniformRandomStrategy(spl)
+    s = PopularityStrategy(spl)
     ev = Evaluation(spl.test_len_ini,k )
     ad = HitAddition()
     before = 0
-    pr = open("../results/07-30-18_random.txt", "w")
+    pr = open("../results/07-30-18_popularity.txt", "w")
     pr.write("iteration\tprecision\trecall\thits\tcoverage\n")
     # while before != spl.train_len:
-    for i in range(1000):
+    for i in range(480):
         # print('--------TRAIN SET--------')
         # print( spl.train )
         # print( spl.train_len )
