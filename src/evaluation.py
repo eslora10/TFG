@@ -1,19 +1,19 @@
 class Evaluation(object):
     """
     """
-    def __init__(self, test_len_ini, k):
+    def __init__(self, test_len_ini, k, test, recommendation):
         self.test_len_ini = test_len_ini
         self.k = k
 
-    def evaluate(self, test, recommendation):
         self.hits = 0
         self.coverage = 0
         num_users = 0
         len_reco = 0
 
-        for user1 in test:
+        # for user1 in test:
+        for user1 in recommendation:
             num_users+=1
-            T = test[user1]
+            T = set( test[user1].keys() )
             R = recommendation[user1]
             T_R = T.intersection(R)
             self.hits += len( T_R )

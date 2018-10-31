@@ -1,3 +1,10 @@
+# TODO: Implementar estrategias de bandits
+# TODO: Probar bandits con KNN
+# TODO: Reescribir la implementacion de las clases usando el modelo de FAA
+# TODO: Tener en cuenta el numero de interacciones entre 2 usuarios?
+# TODO: Seleccion de un usuario al azar. IDEA: implementar una funcion que devuelva la lista de los usuarios sobre los que
+#       recomendar para poder hacerlo escalable
+# TODO: OJO con los ficheros de ratings, comprobar que el rating no vale 0
 import numpy as np
 
 class Splitter(object):
@@ -5,17 +12,6 @@ class Splitter(object):
 
     """
 
-    train = {}
-    train_miss = {}
-    train_len = 0
-    train_len_ini = {}
-    train_r = {}
-    test = {}
-    test_len = 0
-    test_len_p = 0
-    train_len_p = 0
-    test_len_ini = 0
-    test_r = {}
 
     def addItem(self, user, item, info, destination_set):
         if destination_set == "train":
@@ -52,8 +48,19 @@ class Splitter(object):
             set1_r[item] = { user: info }
         return length
 
-    def __init__(self, datapath, arg):
+    def __init__(self, datapath, arg, separator="\t"):
 
+        self.train = {}
+        self.train_miss = {}
+        self.train_len = 0
+        self.rain_len_ini = {}
+        self.train_r = {}
+        self.test = {}
+        self.test_len = 0
+        self.test_len_p = 0
+        self.train_len_p = 0
+        self.test_len_ini = 0
+        self.test_r = {}
         self.data = open(datapath, 'r')
 
         # Removes the data head
@@ -62,7 +69,7 @@ class Splitter(object):
         # Start reading the data file line by line
         for line in self.data:
 
-            inter = line.split(' ')
+            inter = line.split(separator)
             user = int( inter[0] )
             item = int( inter[1] )
             info = int(inter[2])
@@ -110,14 +117,12 @@ class PercentageSplitter(Splitter):
 
 if __name__ == "__main__":
     # spl = TimestampSplitter("../data/interactions-graph-200tweets_100.tsv",1277496627000 )
-    # spl = PercentageSplitter("../data/interactions-graph-200tweets.tsv",0.2)
-    # spl = PercentageSplitter("../data/prueba.tsv",0.2)
-    spl = PercentageSplitter("../data/ratings_binary.txt" ,0.2)
-    # spl = TimestampSplitter("../data/prueba.tsv", 3)
+    spl = PercentageSplitter("../data/interactions-graph-200tweets.tsv",0.2)
+    # spl = PercentageSplitter("../data/ratings_binary.txt", 0.2, separator=" ")
     # spl = RandomSplitter("../data/interactions-graph-200tweets_100.tsv", 0.2)
     print ("TRAIN SET:")
-    print (spl.train)
+    # print (spl.train)
     print (spl.train_len)
     print ("TEST SET:")
-    print (spl.test)
+    # print (spl.test)
     print (spl.test_len)
