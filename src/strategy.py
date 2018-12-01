@@ -15,6 +15,7 @@ class Strategy(object):
         return {}
 
     def process(self, k):
+        i=0
         test_p = {}
         weights = self.strategy()
         for user in weights:
@@ -77,3 +78,4 @@ class PopularityStrategy(Strategy):
                    and (user1 != user2) and (user2 not in self.splitter.train_miss[user1]):
                     weights[user1].append(pair)
         return weights
+

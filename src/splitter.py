@@ -1,3 +1,10 @@
+# TODO: Implementar estrategias de bandits
+# TODO: Probar bandits con KNN
+# TODO: Reescribir la implementacion de las clases usando el modelo de FAA
+# TODO: Tener en cuenta el numero de interacciones entre 2 usuarios?
+# TODO: Seleccion de un usuario al azar. IDEA: implementar una funcion que devuelva la lista de los usuarios sobre los que
+#       recomendar para poder hacerlo escalable
+# TODO: OJO con los ficheros de ratings, comprobar que el rating no vale 0
 import numpy as np
 
 class Splitter(object):
@@ -5,19 +12,8 @@ class Splitter(object):
 
     """
 
-    train = {}
-    train_miss = {}
-    train_len = 0
-    train_len_ini = {}
-    train_r = {}
-    test = {}
-    test_len = 0
-    test_len_p = 0
-    train_len_p = 0
-    test_len_ini = 0
-    test_r = {}
 
-    def addItem(self, user, item, destination_set):
+    def addItem(self, user, item, info, destination_set):
         if destination_set == "train":
             set1 = self.train
             set2 = self.test
@@ -31,29 +27,40 @@ class Splitter(object):
 
 
         try:
-            if item not in set1[user]:
-                set1[user].add(item)
-                length+=1
+            # if item not in set1[user]:
+            set1[user][ item ] = info
+            length+=1
         except KeyError:
-            set1[user] = set([item])
+            set1[user] = { item: info }
             length+=1
 
-        if item not in set1:
-            set1[item] = set()
+        # if item not in set1:
+        #     set1[item] = set()
 
-        if item not in set2:
-            set2[item] = set()
+        # if item not in set2:
+        #     set2[item] = set()
 
         if user not in set2:
-            set2[user] = set()
+            set2[user] = {}
         try:
-            set1_r[item].add(user)
+            set1_r[item][ user ] = info
         except:
-            set1_r[item] = set( [ user ] )
+            set1_r[item] = { user: info }
         return length
 
-    def __init__(self, datapath, arg):
+    def __init__(self, datapath, arg, separator="\t"):
 
+        self.train = {}
+        self.train_miss = {}
+        self.train_len = 0
+        self.rain_len_ini = {}
+        self.train_r = {}
+        self.test = {}
+        self.test_len = 0
+        self.test_len_p = 0
+        self.train_len_p = 0
+        self.test_len_ini = 0
+        self.test_r = {}
         self.data = open(datapath, 'r')
 
         # Removes the data head
@@ -62,59 +69,20 @@ class Splitter(object):
         # Start reading the data file line by line
         for line in self.data:
 
-            inter = line.split('\t')
-            user1 = int( inter[0] )
-            user2 = int( inter[1] )
-            if user1 != user2:
+            inter = line.split(separator)
+            user = int( inter[0] )
+            item = int( inter[1] )
+            info = int(inter[2])
+            if user != item:
 
-                if self.condition(arg, int(inter[2])):
-                    self.train_len = self.addItem(user1, user2, "train")
-#                    try:
-#                        if user2 not in self.train[user1]:
-#                            self.train[user1].add(user2)
-#                            self.train_len+=1
-#                    except KeyError:
-#                        self.train[user1] = set([user2])
-#                        self.train_len+=1
-#
-#                    if user2 not in self.train:
-#                        self.train[user2] = set()
-#
-#                    if user2 not in self.test:
-#                        self.test[user2] = set()
-#
-#                    if user1 not in self.test:
-#                        self.test[user1] = set()
-#                    try:
-#                        self.train_r[user2].add(user1)
-#                    except:
-#                        self.train_r[user2] = set( [ user1 ] )
-#
+                if self.condition(arg,info):
+                    self.train_len = self.addItem(user, item, info, "train")
 
-                elif (user1 not in self.train or user2 not in self.train[user1])\
-                and (user2 not in self.train or user1 not in self.train[user2])\
-                and (user2 not in self.test or user1 not in self.test[user2]):
-                    self.test_len = self.addItem(user1, user2, "test")
-#                    try:
-#                        if user2 not in self.test[user1]:
-#                            self.test[user1].add(user2)
-#                            self.test_len+=1
-#                    except KeyError:
-#                        self.test[user1] = set([user2])
-#                        self.test_len+=1
-#                    if user2 not in self.test:
-#                        self.test[user2] = set()
-#
-#                    if user2 not in self.train:
-#                        self.train[user2] = set()
-#
-#                    if user1 not in self.train:
-#                        self.train[user1] = set()
-#                    try:
-#                        self.test_r[user2].add(user1)
-#                    except:
-#                        self.test_r[user2] = set( [ user1 ] )
-#
+                elif (user not in self.train or item not in self.train[user])\
+                and (item not in self.train or user not in self.train[item])\
+                and (item not in self.test or user not in self.test[item]):
+                    self.test_len = self.addItem(user, item, info, "test")
+
         self.test_len_ini = self.test_len
 
         for user in self.train:
@@ -150,7 +118,7 @@ class PercentageSplitter(Splitter):
 if __name__ == "__main__":
     # spl = TimestampSplitter("../data/interactions-graph-200tweets_100.tsv",1277496627000 )
     spl = PercentageSplitter("../data/interactions-graph-200tweets.tsv",0.2)
-    # spl = TimestampSplitter("../data/prueba.tsv", 3)
+    # spl = PercentageSplitter("../data/ratings_binary.txt", 0.2, separator=" ")
     # spl = RandomSplitter("../data/interactions-graph-200tweets_100.tsv", 0.2)
     print ("TRAIN SET:")
     # print (spl.train)
