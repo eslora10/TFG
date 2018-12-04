@@ -11,6 +11,7 @@ class Splitter(object):
         self.item_set = set()
         self.train_set = {}
         self.test_set = {}
+        self.item_users = {}
 
         with open(path) as data:
             for line in data:
@@ -20,20 +21,27 @@ class Splitter(object):
                 value = int(inter[2])
                 self.user_set.add(user)
                 self.item_set.add(item)
+                if item not in self.item_users:
+                    self.item_users[item] = set([user])
+                else:
+                    self.item_users[item].add(user)
+
                 if self.condition():
                     try:
                         if item not in self.train_set[user].keys():
                             self.train_set[user][item] = value
                     except KeyError:
                         self.train_set[user] = {item: value}
-                    self.train_len += 1
+                    if value:
+                        self.train_len += 1
                 else:
                     try:
                         if item not in self.test_set[user].keys():
                             self.test_set[user][item] = value
                     except KeyError:
                         self.test_set[user] = {item: value}
-                    self.test_len += 1
+                    if value:
+                        self.test_len += 1
 
 
     def condition(self):
