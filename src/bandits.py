@@ -1,3 +1,4 @@
+# TODO: Optimizar la entrada y salida de los items de la lista de acciones
 import numpy as np
 import matplotlib.pyplot as plt
 import random
@@ -34,7 +35,7 @@ class ItemBandit():
         return self.value <= other.value
 
     def __repr__(self):
-        return '(item:{0}, value:{1}, count: {2}, time:{3})'.format(self.item, self.value, self.count, self.time)
+        return '{0}\t{1}\t{2}\t{3}\n'.format(self.item, self.time, self.value, self.count)
 
 class Bandit():
     """
@@ -68,8 +69,8 @@ class Bandit():
                             item.value = criteria(n, current_value, reward)
                         # Remove the user from the item_user set
                         try:
-                            splitter.item_users.pop(item.item)
-                            if not splitter.item_users:
+                            splitter.item_users[item.item].remove(user)
+                            if not splitter.item_users[item.item]:
                                 item.time = self.epoch
                         except KeyError:
                             pass
@@ -97,13 +98,9 @@ class Bandit():
     def output_to_file(self, filepath, filepath_2):
         with open(filepath, 'w') as output:
             output.write("Total epochs: {0}\n".format(self.epoch))
-            output.write("Item\tEpoch empty\tEstimated value\n")
+            output.write("Item\tEpoch empty\tEstimated value\tTime\n")
             for item in self.actions:
-                if item.time:
-                    time = item.time
-                else:
-                    time = self.epoch
-                output.write("{0}\t{1}\t{2}\n".format(item.item, time, item.value))
+                output.write(item.__repr__())
         with open(filepath_2, 'w') as output:
             for i in range(len(self.cummulative_recall)):
                 output.write("{0}\t{1}\n".format(i, self.cummulative_recall[i]))
@@ -183,7 +180,7 @@ if __name__=="__main__":
     fig = plt.figure()
     for eps in [1, 0.5,0.1]:
         spl = Splitter("../data/ratings_binary.txt", " ")
-        bandit = EpsilonGreedyBandit(0.9, spl)
+        bandit = EpsilonGreedyBandit(eps, spl)
         bandit.output_to_file("../results/epsilon{0}_greedy_bandit.txt".format(eps), "../results/bandit_recall.txt")
 
         plot_results_hist("../results/epsilon{0}_greedy_bandit.txt".format(eps))
