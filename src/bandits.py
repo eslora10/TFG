@@ -1,4 +1,5 @@
-# TODO: Optimizar la entrada y salida de los items de la lista de acciones
+# TODO: Considerar la opcion de tener train
+
 import numpy as np
 import matplotlib.pyplot as plt
 import random
@@ -44,6 +45,7 @@ class Bandit():
     def __init__(self, splitter, criteria="mean"):
         splitter = splitter
         self.actions = sorted([ItemBandit(item) for item in splitter.item_set])
+        self.len_actions = len(self.actions)
         len_test_ini = splitter.test_len
         self.cummulative_recall = [0]
         recall = 0
@@ -56,7 +58,7 @@ class Bandit():
                     # Remove the item from the ordered actions set
                     item.count+=1
                     if item.item in splitter.test_set[user].keys():
-                        self.actions.remove(item)
+                        # self.actions.remove(item)
                         current_value = item.value
                         n = item.count
                         reward = splitter.test_set[user][item.item]
@@ -81,14 +83,18 @@ class Bandit():
                         if not splitter.test_set[user]:
                             splitter.test_set.pop(user)
                         # Reinsert the item in its new position
-                        insort(self.actions, item)
+                        #insort(self.actions, item)
                     else:
-                        # In case we don't have info about the item we add it to the train set with reward=0
+                        # In case we don't have info about the item we add it to the train
+                        # set with reward=0
                         reward = 0
                     try:
                         splitter.train_set[user][item.item] = reward
                     except KeyError:
                         splitter.train_set[user] = {item.item: reward}
+
+                    # Reinsert the item in its new position
+                    insort(self.actions, item)
             self.epoch += 1
             self.cummulative_recall.append(recall/len_test_ini)
 
@@ -127,52 +133,16 @@ class EpsilonGreedyBandit(Bandit):
                 item = self.actions[i]
         else:
             # Exploration
-            item = random.sample(self.actions, 1)[0]
+            #item = random.sample(self.actions, 1)[0]
+            i = np.random.randint(self.len_actions)
+            item = self.actions[i]
             while user in splitter.train_set.keys() and item.item in splitter.train_set[user]:
-                item = random.sample(self.actions, 1)[0]
+                #item = random.sample(self.actions, 1)[0]
+                i = np.random.randint(self.len_actions)
+                item = self.actions[i]
+        self.actions.pop(i)
         return item
 
-
-def plot_results_hist(results_file, num_items = 0):
-    with open(results_file, 'r') as infile:
-        infile.readline() # Total epoch
-        infile.readline() # Header
-        X = []
-        Y1 = []
-        Y2= []
-        if num_items:
-            for _ in range(num_items):
-                line = infile.readline().strip('\n').split('\t')
-                X.append(int(line[0]))
-                Y1.append(int(line[1]))
-                Y2.append(float(line[2]))
-        else:
-            for line in infile:
-                li = line.strip('\n').split('\t')
-                X.append(int(li[0]))
-                Y1.append(int(li[1]))
-                Y2.append(float(li[2]))
-
-        fig, (fig_1, fig_2) = plt.subplots(2, 1)
-        fig_1.bar(range(len(X)), Y1)
-        fig_1.set_title("Epoch empty")
-        fig_2.bar(range(len(X)), Y2)
-        fig_2.set_title("Estimated value")
-        fig.savefig(results_file+'.png')
-        plt.close(fig)
-
-def plot_results_graph(results_file, eps):
-    with open(results_file) as infile:
-        X = []
-        Y = []
-        for line in infile:
-            li = line.strip('\n').split('\t')
-            X.append(int(li[0]))
-            Y.append(float(li[1]))
-
-        plt.plot(X, Y, label=eps)
-        plt.xlabel("Epoch")
-        plt.ylabel("Cummulative recall")
 
 if __name__=="__main__":
     from splitter import Splitter
@@ -181,11 +151,5 @@ if __name__=="__main__":
     for eps in [1, 0.5,0.1]:
         spl = Splitter("../data/ratings_binary.txt", " ")
         bandit = EpsilonGreedyBandit(eps, spl)
-        bandit.output_to_file("../results/epsilon{0}_greedy_bandit.txt".format(eps), "../results/bandit_recall.txt")
-
-        plot_results_hist("../results/epsilon{0}_greedy_bandit.txt".format(eps))
-        plot_results_graph("../results/bandit_recall.txt", eps)
-
-    plt.legend()
-    plt.savefig("EpsilonGreedy.png")
-    plt.show()
+        bandit.output_to_file("../results/epsilon{0}_greedy_bandit.txt".format(eps),
+                              "../results/bandit_recall{0}.txt".format(eps))

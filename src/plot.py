@@ -1,35 +1,58 @@
 import matplotlib.pyplot as plt
-import numpy as np
+import seaborn as sns
 
-def plot(path, fig, prec, rec):
-    X = []
-    precision = [0]
-    recall = [0]
-    sum_hits = [0]
-    coverage = []
-    with open("../results/07-30-18_"+path+".txt", 'r') as f:
-        f.readline()
-        for line in f:
-            data = line.split("\t")
-            X.append(int(data[0]))
-            precision.append(precision[-1]+float(data[1]))
-            recall.append(recall[-1]+float(data[2]))
-            # hits.append(int(data[3]))
-            sum_hits.append(sum_hits[-1]+int(data[3]))
-            coverage.append(float(data[4]))
-    prec.plot(X,precision[1:], label=path)
-    prec.legend(loc=1)
-    prec.set_ylabel("Cumulated precision")
-    prec.set_xlabel("t")
-    # rec.plot(X,hits, label="Hits")
-    rec.plot(X,recall[1:], label=path)
-    rec.set_ylabel("Cumulated recall")
-    rec.set_xlabel("t")
-    rec.legend(loc=1)
-
-fig, ( prec, rec ) = plt.subplots(2,1)
-for f in ["random","popularity"]:
-    plot(f, fig, prec, rec)
-plt.show()
+def plot_results_scatter(results_file, eps, num_items = None):
+    sns.set()
+    sns.axes_style("darkgrid")
+    sns.set_context("paper")
+    with open(results_file, 'r') as infile:
+        infile.readline() # Total epoch
+        infile.readline() # Header
+        X = []
+        Y1 = []
+        Y2= []
+        lines = infile.readlines()[:num_items]
+        for line in lines:
+            spl = line.strip('\n').split('\t')
+            X.append(int(spl[0]))
+            Y1.append(int(spl[1]))
+            Y2.append(float(spl[2]))
 
 
+        plt.scatter(Y2, Y1, label=eps)
+        plt.title("Epoch empty")
+        plt.xlabel("Value")
+        plt.ylabel("Epoch empty")
+
+def plot_results_graph(results_file, eps):
+    sns.set()
+    sns.axes_style("darkgrid")
+    sns.set_context("paper")
+    with open(results_file) as infile:
+        X = []
+        Y = []
+        for line in infile:
+            li = line.strip('\n').split('\t')
+            X.append(int(li[0]))
+            Y.append(float(li[1]))
+
+        plt.plot(X, Y, label=eps)
+        plt.xlabel("Epoch")
+        plt.ylabel("Cummulative recall")
+
+if __name__=="__main__":
+    fig = plt.figure()
+    for eps in [1, 0.5,0.1]:
+        plot_results_scatter("../results/epsilon{0}_greedy_bandit.txt".format(eps), eps)
+
+    plt.legend()
+    plt.savefig("../results/EpsilonGreedy_scatter.png")
+    plt.show()
+    plt.close()
+
+    for eps in [1, 0.5,0.1]:
+        plot_results_graph("../results/bandit_recall{0}.txt".format(eps), eps)
+
+    plt.legend()
+    plt.savefig("../results/EpsilonGreedy.png")
+    plt.show()
