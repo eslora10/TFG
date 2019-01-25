@@ -42,17 +42,22 @@ def plot_results_graph(results_file, eps):
 
 if __name__=="__main__":
     fig = plt.figure()
-    for eps in [1, 0.5,0.1]:
-        plot_results_scatter("../results/epsilon{0}_greedy_bandit.txt".format(eps), eps)
+    files = ["ucb2", "epsilon0.1", "random"]
+    for f in files:
+        res_file = "../results/" + f + "_recall.txt"
+        plot_results_graph(res_file, f)
 
     plt.legend()
-    plt.savefig("../results/EpsilonGreedy_scatter.png")
+    plt.savefig("../results/Recall.png")
     plt.show()
-    plt.close()
 
-    for eps in [1, 0.5,0.1]:
-        plot_results_graph("../results/bandit_recall{0}.txt".format(eps), eps)
+
+    fig = plt.figure()
+
+    for f in files:
+        res_file = "../results/" + f + "_epoch.txt"
+        plot_results_scatter(res_file, f)
 
     plt.legend()
-    plt.savefig("../results/EpsilonGreedy.png")
+    plt.savefig("../results/Epoch.png")
     plt.show()
