@@ -42,7 +42,7 @@ def plot_results_graph(results_file, eps):
 
 if __name__=="__main__":
     fig = plt.figure()
-    files = ["ucb2", "epsilon0.1", "random"]
+    files = ["eps0.1", "ucb2", "random"]
     for f in files:
         res_file = "../results/" + f + "_recall.txt"
         plot_results_graph(res_file, f)

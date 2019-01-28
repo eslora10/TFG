@@ -39,7 +39,7 @@ class ItemBandit():
         return self.value <= other.value
 
     def __repr__(self):
-        return '{0}\t{1}\t{2}\t{3}\n'.format(self.item, self.time, self.value, self.count)
+        return '{0}\t{1}\t{2}\t{3}\n'.format(self.item, self.time, self.reward, self.count)
 
 class Bandit():
     """
@@ -60,10 +60,9 @@ class Bandit():
                     # Remove the item from the ordered actions set
                     item.count+=1
                     if item.item in splitter.test_set[user].keys():
-                        current_value = item.value
                         n = item.count
                         reward = splitter.test_set[user][item.item]
-                        self.update_item_info(item, current_value, n, reward, criteria)
+                        self.update_item_info(item, n, reward, criteria)
                         # Remove the user from the item_user set
                         try:
                             splitter.item_users[item.item].remove(user)
@@ -104,8 +103,13 @@ class Bandit():
     def select_item(self, splitter, user):
         pass
 
-    def update_item_info(self, item, value, count, reward, criteria):
-        pass
+    def update_item_info(self, item, count, reward, criteria):
+        if criteria == "mean":
+            item.reward = 1/count*((count-1)*item.reward + reward)
+        elif criteria == "cummulative_mean":
+            item.reward = 1/2*(item.reward + reward)
+        else:
+            item.reward = criteria(count, item.reward, reward)
 
     def output_to_file(self, filepath, filepath_2):
         with open(filepath, 'w') as output:
@@ -149,14 +153,9 @@ class EpsilonGreedyBandit(Bandit):
         self.actions.pop(i)
         return item
 
-    def update_item_info(self, item, value, count, reward, criteria):
-        item.reward += reward
-        if criteria == "mean":
-            item.value = 1/count*((count-1)*value + reward)
-        elif criteria == "cummulative_mean":
-            item.value = 1/2*(value + reward)
-        else:
-            item.value = criteria(count, value, reward)
+    def update_item_info(self, item, count, reward, criteria):
+        super().update_item_info(item, count, reward, criteria)
+        item.value = item.reward
 
 class UCBBandit(Bandit):
 
@@ -184,9 +183,9 @@ class UCBBandit(Bandit):
             self.update_train_test(splitter, user, itemb, reward)
         return sorted(actions)
 
-    def update_item_info(self, item, value, count, reward, criteria):
-        item.reward += reward
-        item.uncertainty = self.param*sqrt(np.log(self.time)/item.count)
+    def update_item_info(self, item, count, reward, criteria):
+        super().update_item_info(item, count, reward, criteria)
+        item.uncertainty = sqrt(self.param*np.log(self.time)/item.count)
         item.value = item.reward + item.uncertainty # 1/count*((count-1)*value + reward) + uncertainty
 
         for item2 in self.actions:
@@ -215,7 +214,7 @@ if __name__=="__main__":
     #                             "../results/ucb{0}_recall.txt".format(eps))
 
     spl = Splitter("../data/ratings_binary.txt", " ")
-    eps = 2
-    bandit = UCBBandit(spl)
-    bandit.output_to_file("../results/ucb{0}_epoch.txt".format(eps),
-                          "../results/ucb{0}_recall.txt".format(eps))
+    eps = 1
+    bandit = EpsilonGreedyBandit(eps,spl)
+    bandit.output_to_file("../results/eps{0}_epoch.txt".format(eps),
+                          "../results/eps{0}_recall.txt".format(eps))
