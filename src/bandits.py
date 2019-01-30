@@ -1,4 +1,11 @@
-# TODO: Considerar la opcion de tener train
+# -*- coding: utf-8 -*-
+""" Module: bandits
+
+This module implements several multi-armed-bandit algorithms applied to Recommender Systems
+
+Todo:
+    * Considerar la opcion de tener train
+"""
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -8,17 +15,25 @@ from bisect import insort
 from math import sqrt
 
 class ItemBandit():
-    """
+    """ Basic item to be reccomended with its parameters and atributes.
+
+    Attributes:
+        item (int): item id
+        value (float): estimated value of an item, depends on the chosen algorithm
+        count (int): numer of times each item has been chosen
+        time (int): iteration were the item test became empty
+        reward (float): ratio between successful recomendation and the number of times chosen
+        uncertainty (float): how sure we are the item value is correct
+        successes (int): number of successful recomendations
     """
     def __init__(self, item, value = 0, count = 0, time = 0, reward = 0, uncertainty = 0):
-        """
-        """
         self.item = item
         self.value = value
         self.count = count
         self.time = time
         self.reward = reward
         self.uncertainty = uncertainty
+        self.successes = 0
 
     def __lt__(self, other):
         return self.value > other.value
@@ -42,11 +57,31 @@ class ItemBandit():
         return '{0}\t{1}\t{2}\t{3}\n'.format(self.item, self.time, self.reward, self.count)
 
 class Bandit():
-    """
+    """ Auxiliar abstract class to implement different bandits algorithms.
+
+    Attributes:
+        actions (:obj: `list` of :obj: `Item`): sorted list which contains all of the items to be recommended
+        len_actions (int): length of the previous list
+        cummulative_recall (list): list wich contains the evolution of the iteration
+        time (int): number of iterations
+
     """
 
     def __init__(self, splitter, criteria="mean"):
-        self.actions = self.init_items(splitter) # sorted([ItemBandit(item) for item in splitter.item_set])
+        """ Creates a new Bandit and perfoms the algorithm.
+
+        Note:
+            This is an abstract class and it should not be instanciated
+
+        Args:
+            splitter (:obj: `Splitter`): Object which contains both train and test
+            criteria (str or callable, optional): how to compute the reward of an item
+
+        Returns:
+            A Bandit object with the iteration finished.
+
+        """
+        self.actions = self.init_items(splitter)
         self.len_actions = len(self.actions)
         len_test_ini = splitter.test_len
         self.cummulative_recall = [0]
@@ -84,6 +119,19 @@ class Bandit():
             self.cummulative_recall.append(recall/len_test_ini)
 
     def update_train_test(self, splitter, user, item, reward):
+        """ Given a user and an item, this function removes the item from the user test set and adds
+        it to the user test set.
+
+        Args:
+            splitter (:obj: `Splitter`): Object which contains both train and test
+            user (int): user id
+            item (:obj: `ItemBandit`): item to change from test to train
+            reward (int): 0 if the user didn't like the item or if there is no info in the test set, 1 otherwise
+
+        Returns:
+            None
+
+        """
         # Remove item from the test_set
         try:
             splitter.test_set[user].pop(item.item)
@@ -98,12 +146,43 @@ class Bandit():
             splitter.train_set[user] = {item.item: reward}
 
     def init_items(self, splitter):
+        """ Creates the ItemBandit list to use during the algorithm.
+
+        Args:
+            splitter (:obj: `Splitter`): Object which contains both train and test
+
+        Returns:
+            A sorted list which contains the ItemBanit objects.
+
+        """
         return sorted([ItemBandit(item) for item in splitter.item_set])
 
     def select_item(self, splitter, user):
+        """ Selects and item from the action list following the each bandit specific strategy.
+
+        Note:
+            Removes the selected item from the action list
+
+        Args:
+            splitter (:obj: `Splitter`): Object which contains both train and test
+            user (int): user to receive the item (needed to avoid reccomending the same item more than once)
+
+        Returns:
+            The ItemBanit chosen
+
+        """
         pass
 
     def update_item_info(self, item, count, reward, criteria):
+        """ Updates the item information each time an item has been chosen
+
+        Args:
+        item (:obj: `ItemBandit`):
+
+        Returns:
+            None
+
+        """
         if criteria == "mean":
             item.reward = 1/count*((count-1)*item.reward + reward)
         elif criteria == "cummulative_mean":
@@ -126,7 +205,7 @@ class EpsilonGreedyBandit(Bandit):
     """
     """
 
-    def __init__(self, epsilon, splitter, criteria="mean"):
+    def __init__(self, splitter, epsilon=0.1, criteria="mean"):
         self.epsilon = epsilon
         super().__init__(splitter, criteria=criteria)
 
@@ -185,7 +264,7 @@ class UCBBandit(Bandit):
 
     def update_item_info(self, item, count, reward, criteria):
         super().update_item_info(item, count, reward, criteria)
-        item.uncertainty = sqrt(self.param*np.log(self.time)/item.count)
+        item.uncertainty = sqrt(self.param*np.log10(self.time)/item.count)
         item.value = item.reward + item.uncertainty # 1/count*((count-1)*value + reward) + uncertainty
 
         for item2 in self.actions:
@@ -203,18 +282,50 @@ class UCBBandit(Bandit):
         self.actions.pop(i)
         return item
 
+class ThompsonSamplingBandit(Bandit):
+    """
+    """
+    def __init__(self, splitter, criteria="mean"):
+        super().__init__(splitter, criteria)
+
+    def update_item_info(self, item, count, reward, criteria):
+        super().update_item_info(item, count, reward, criteria)
+        item.value = item.reward
+        item.successes += reward
+
+    def select_item(self, splitter, user):
+        # Generate a random number following a beta distribution for each item
+        sample = []
+        for item in self.actions:
+            num = np.random.beta(item.successes + 1, item.count - item.successes + 1)
+            sample.append((num, item))
+
+        sample = sorted(sample, reverse=True)
+        i = 0
+        item = sample[i][1]
+        while user in splitter.train_set.keys() and item.item in splitter.train_set[user]:
+            i += 1
+            item = sample[i][1]
+        self.actions.remove(item)
+        return item
+
 if __name__=="__main__":
     from splitter import Splitter
 
-    fig = plt.figure()
     # for eps in [10, 2, 0]:
     #     spl = Splitter("../data/ratings_binary.txt", " ")
     #     bandit = UCBBandit(spl, param=eps)
     #     bandit.output_to_file("../results/ucb{0}_epoch.txt".format(eps),
     #                             "../results/ucb{0}_recall.txt".format(eps))
 
+    #spl = Splitter("../data/ratings_binary.txt", " ")
+    #eps = 0.1
+    #bandit = EpsilonGreedyBandit(spl)
+    #bandit.output_to_file("../results/eps{0}_epoch.txt".format(eps),
+    #                      "../results/eps{0}_recall.txt".format(eps))
+
     spl = Splitter("../data/ratings_binary.txt", " ")
-    eps = 1
-    bandit = EpsilonGreedyBandit(eps,spl)
-    bandit.output_to_file("../results/eps{0}_epoch.txt".format(eps),
-                          "../results/eps{0}_recall.txt".format(eps))
+    alpha = 2
+    bandit = ThompsonSamplingBandit(spl)
+    bandit.output_to_file("../results/ts_epoch.txt",
+                          "../results/ts_recall.txt")
