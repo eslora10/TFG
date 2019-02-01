@@ -42,11 +42,14 @@ def plot_results_graph(results_file, eps):
 
 if __name__=="__main__":
     fig = plt.figure()
-    files = ["ts", "eps0.1", "ucb2", "random"]
-    for f in files:
-        res_file = "../results/" + f + "_recall.txt"
-        plot_results_graph(res_file, f)
+    files = ["ts", "eps0.1", "ucb2"]#, "random"]
+    for crit in ["mean"]: #, "wmean"]:
+        for f in files:
+            res_file = "../results/cm100/" + f + "_recall_cm100_"+ crit + ".txt"
+            plot_results_graph(res_file, f + crit)
 
+    plot_results_graph("../results/cm100/random_recall.txt", "random")
+    plot_results_graph("../results/popularity_recall_cm100.txt", "popularity")
     plt.legend()
     plt.savefig("../results/Recall.png")
     plt.show()
@@ -54,10 +57,11 @@ if __name__=="__main__":
 
     fig = plt.figure()
 
-    for f in files:
-        res_file = "../results/" + f + "_epoch.txt"
-        plot_results_scatter(res_file, f)
+    for crit in ["mean", "wmean"]:
+        for f in files:
+            res_file = "../results/cm100/" + f + "_epoch_cm100_" + crit + ".txt"
+            plot_results_scatter(res_file, f + crit)
 
     plt.legend()
     plt.savefig("../results/Epoch.png")
-    plt.show()
+    #plt.show()

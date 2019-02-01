@@ -100,7 +100,7 @@ class Bandit():
                         self.update_item_info(item, n, reward, criteria)
                         # Remove the user from the item_user set
                         try:
-                            splitter.item_users[item.item].remove(user)
+                            splitter.item_users[item.item].pop(user)
                             if not splitter.item_users[item.item]:
                                 item.time = self.time
                         except KeyError:
@@ -309,23 +309,60 @@ class ThompsonSamplingBandit(Bandit):
         self.actions.remove(item)
         return item
 
-if __name__=="__main__":
-    from splitter import Splitter
+# DELETE
+class PopularityReccommender(Bandit):
+    """
+    """
+    def __init__(self, splitter, criteria="mean"):
+        """
+        """
+        super().__init__(splitter, criteria)
 
-    # for eps in [10, 2, 0]:
-    #     spl = Splitter("../data/ratings_binary.txt", " ")
-    #     bandit = UCBBandit(spl, param=eps)
-    #     bandit.output_to_file("../results/ucb{0}_epoch.txt".format(eps),
-    #                             "../results/ucb{0}_recall.txt".format(eps))
+    def init_items(self, splitter):
+        """
+        """
+        actions = []
+        # Order the items by their popularity
+        for item in splitter.item_set:
+            count = sum([splitter.item_users[item][user] > 0 for user in splitter.item_users[item]])
+            actions.append(ItemBandit(item, value = count))
+        return sorted(actions)
+
+    def select_item(self, splitter, user):
+        """
+        """
+        i = 0
+        item = self.actions[i]
+        while user in splitter.train_set.keys() and item.item in splitter.train_set[user]:
+            i+=1
+            item = self.actions[i]
+        self.actions.pop(i)
+        return item
+
+    def update_item_info(self, item, count, reward, criteria):
+        super().update_item_info(item, count, reward, criteria)
+        item.value += reward
+
+if __name__=="__main__":
+    from splitter import Splitter, PercentageSplitter
+
+    #spl = Splitter("../data/ratings_binary.txt", " ")
+    #bandit = UCBBandit(spl, criteria="cummulative_mean")
+    #bandit.output_to_file("../results/ucb2_epoch_cm100_wmean.txt",
+    #                      "../results/ucb2_recall_cm100_wmean.txt")
 
     #spl = Splitter("../data/ratings_binary.txt", " ")
     #eps = 0.1
-    #bandit = EpsilonGreedyBandit(spl)
-    #bandit.output_to_file("../results/eps{0}_epoch.txt".format(eps),
-    #                      "../results/eps{0}_recall.txt".format(eps))
+    #bandit = EpsilonGreedyBandit(spl, criteria="cummulative_mean")
+    #bandit.output_to_file("../results/eps{0}_epoch_cm100_wmean.txt".format(eps),
+    #                      "../results/eps{0}_recall_cm100_wmean.txt".format(eps))
 
-    spl = Splitter("../data/ratings_binary.txt", " ")
-    alpha = 2
-    bandit = ThompsonSamplingBandit(spl)
-    bandit.output_to_file("../results/ts_epoch.txt",
-                          "../results/ts_recall.txt")
+    #spl = Splitter("../data/ratings_binary.txt", " ")
+    #bandit = ThompsonSamplingBandit(spl, criteria="cummulative_mean")
+    #bandit.output_to_file("../results/ts_epoch_cm100_wmean.txt",
+    #                      "../results/ts_recall_cm100_wmean.txt")
+
+    spl = PercentageSplitter("../data/ratings_binary.txt", 0.2, separator = " ")
+    bandit = PopularityReccommender(spl)
+    bandit.output_to_file("../results/popularity_epoch_cm100.txt",
+                          "../results/popularity_recall_cm100.txt")

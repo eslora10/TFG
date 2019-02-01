@@ -22,9 +22,9 @@ class Splitter(object):
                 self.user_set.add(user)
                 self.item_set.add(item)
                 if item not in self.item_users:
-                    self.item_users[item] = set([user])
+                    self.item_users[item] = {user: value} #self.item_users[item] = set([user])
                 else:
-                    self.item_users[item].add(user)
+                    self.item_users[item][user] = value #self.item_users[item].add(user)
 
                 if self.condition():
                     try:
@@ -59,9 +59,9 @@ class RandomSplitter(Splitter):
     """
 
     """
-    def __init__(self, path, prob):
+    def __init__(self, path, prob, separator='\t'):
         self.prob = prob
-        super().__init__(path)
+        super().__init__(path, separator)
 
     def condition(self):
         return np.random.binomial(1, self.prob)
@@ -69,9 +69,9 @@ class RandomSplitter(Splitter):
 class PercentageSplitter(Splitter):
     """
     """
-    def __init__(self, path, percentage):
+    def __init__(self, path, percentage, separator='\t'):
         self.percentage = percentage
-        super().__init__(path)
+        super().__init__(path, separator)
 
     def condition(self):
         try:
