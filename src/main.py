@@ -5,37 +5,65 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
     from numpy import arange
     from copy import deepcopy
+    import sys
+    import seaborn as sns
+
+    alg = sys.argv[1]
 
     spl = Splitter("../data/ratings_binary.txt", " ")
-    #for eps in [round(0.1*i, 2) for i in range(11)]:
-    #    bandit = EpsilonGreedyBandit(deepcopy(spl), epsilon = eps, criteria = "cummulative_mean")
-    #    bandit.output_to_file("../results/gridSearch/eps{0}_epoch_cm100_wmean.txt".format(eps),
-    #                          "../results/gridSearch/eps{0}_recall_cm100_wmean.txt".format(eps))
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    if alg == "Epsilon":
+        values = [10**(-i) for i in range(1,6)]
+        for eps in values:
+            bandit = EpsilonGreedyBandit(deepcopy(spl), epsilon = eps, criteria = "cummulative_mean")
+            bandit.output_to_file("../results/gridSearch/eps/eps{0}_epoch_cm100_wmean.txt".format(eps),
+                                    "../results/gridSearch/eps/eps{0}_recall_cm100_wmean.txt".format(eps))
+        colors = sns.color_palette("hls", len(values))
+        ax.set_prop_cycle('color', colors)
+        for eps in values:
+            res_file = "../results/gridSearch/eps/eps{0}_recall_cm100_wmean.txt".format(eps)
+            plot_results_graph(res_file, "eps={}".format(eps))
 
-    for alpha in [10**i for i in range(-2, 4)]:
-        bandit = UCBBandit(deepcopy( spl ), param = alpha)
-        bandit.output_to_file("../results/gridSearch/ucb{0}_epoch_cm100_mean.txt".format(alpha),
-                              "../results/gridSearch/ucb{0}_recall_cm100_mean.txt".format(alpha))
-    #fig = plt.figure()
-    #for eps in [round(0.1*i, 2) for i in range(11)]:
-    #        res_file = "../results/gridSearch/eps{0}_recall_cm100_wmean.txt".format(eps)
-    #        plot_results_graph(res_file, "eps={}".format(eps))
+    elif alg == "UCB":
+        values = [10**i for i in range(-2, 4)]
+        for param in values:
+            bandit = UCBBandit(deepcopy( spl ), param = param)
+            bandit.output_to_file("../results/gridSearch/ucb/ucb{0}_epoch_cm100_mean.txt".format(param),
+                                "../results/gridSearch/ucb/ucb{0}_recall_cm100_mean.txt".format(param))
+        colors = sns.color_palette("hls", len(values))
+        ax.set_prop_cycle('color', colors)
+        for param in values:
+            res_file = "../results/gridSearch/ucb/ucb{0}_recall_cm100_wmean.txt".format(param)
+            plot_results_graph(res_file, "param={}".format(param))
 
-    #plt.legend()
-    #plt.savefig("../results/Recall.png")
-    #plt.show()
-    #spl = Splitter("../data/ratings_binary.txt", " ")
-    #bandit = UCBBandit(spl, criteria="cummulative_mean")
-    #bandit.output_to_file("../results/ucb2_epoch_cm100_wmean.txt",
-    #                      "../results/ucb2_recall_cm100_wmean.txt")
+    elif alg == "Thompson":
+        values = range(1, 10)
+        alpha = 1
+        for beta in values:
+            bandit = ThompsonSamplingBandit(deepcopy( spl ), alpha = alpha, beta = beta)
+            bandit.output_to_file("../results/gridSearch/thompson/thompson{0}_{1}_epoch_cm100_mean.txt".format(alpha, beta),
+                                  "../results/gridSearch/thompson/thompson{0}_{1}_recall_cm100_mean.txt".format(alpha, beta))
 
-    #spl = Splitter("../data/ratings_binary.txt", " ")
-    #eps = 0.1
-    #bandit = EpsilonGreedyBandit(spl, criteria="cummulative_mean")
-    #bandit.output_to_file("../results/eps{0}_epoch_cm100_wmean.txt".format(eps),
-    #                      "../results/eps{0}_recall_cm100_wmean.txt".format(eps))
+        values = range(2, 10)
+        beta = 1
+        for alpha in values:
+            bandit = ThompsonSamplingBandit(deepcopy( spl ), alpha = alpha, beta = beta)
+            bandit.output_to_file("../results/gridSearch/thompson/thompson{0}_{1}_epoch_cm100_mean.txt".format(alpha, beta),
+                                  "../results/gridSearch/thompson/thompson{0}_{1}_recall_cm100_mean.txt".format(alpha, beta))
 
-    #spl = Splitter("../data/ratings_binary.txt", " ")
-    #bandit = ThompsonSamplingBandit(spl, criteria="cummulative_mean")
-    #bandit.output_to_file("../results/ts_epoch_cm100_wmean.txt",
-    #                      "../results/ts_recall_cm100_wmean.txt")
+        colors = sns.color_palette("hls", len(values))
+        ax.set_prop_cycle('color', colors)
+        for alpha in range(1, 10):
+            for beta in range(1, 10):
+                res_file = "../results/gridSearch/thompson/thompson{0}_{1}_recall_cm100_wmean.txt".format(alpha, beta)
+                plot_results_graph(res_file, "alpha={0}, beta={1}".format(alpha, beta))
+
+
+    else:
+        print("Error, param must be in [Epsilon, UCB, Thompson]")
+        sys.exit()
+
+    plt.legend()
+    plt.savefig("../results/gridSearch/Recall"+ alg +".png")
+    plt.show()

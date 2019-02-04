@@ -5,6 +5,9 @@ This module implements several multi-armed-bandit algorithms applied to Recommen
 
 Todo:
     * Considerar la opcion de tener train
+    * En ThompsonSampling no contar la ausencia de rating como fallo
+    * Mirar la repeticion de codigo
+    * En ThompsonSampling cambiar la implementación a fallo (IDEA: posiblemente contar la ausencia de valor como -1)
 """
 
 import numpy as np
@@ -34,6 +37,7 @@ class ItemBandit():
         self.reward = reward
         self.uncertainty = uncertainty
         self.successes = 0
+        self.failures = 0
 
     def __lt__(self, other):
         return self.value > other.value
@@ -285,7 +289,9 @@ class UCBBandit(Bandit):
 class ThompsonSamplingBandit(Bandit):
     """
     """
-    def __init__(self, splitter, criteria="mean"):
+    def __init__(self, splitter, criteria="mean", alpha = 1, beta = 1):
+        self.alpha = alpha
+        self.beta = beta
         super().__init__(splitter, criteria)
 
     def update_item_info(self, item, count, reward, criteria):
@@ -297,7 +303,7 @@ class ThompsonSamplingBandit(Bandit):
         # Generate a random number following a beta distribution for each item
         sample = []
         for item in self.actions:
-            num = np.random.beta(item.successes + 1, item.count - item.successes + 1)
+            num = np.random.beta(item.successes + self.alpha, item.count - item.successes + self.beta)
             sample.append((num, item))
 
         sample = sorted(sample, reverse=True)
