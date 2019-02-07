@@ -255,7 +255,7 @@ class UCBBandit(Bandit):
 
     def __init__(self, splitter, alpha = 0, beta = 0, criteria="mean", count_no_rating = True, param=2):
         self.param = param
-        super().__init__(splitter, criteria=criteria, count_no_rating = count_no_rating)
+        super().__init__(splitter, criteria=criteria, count_no_rating = count_no_rating, alpha = alpha, beta = beta)
 
     def init_items(self, splitter, successes, failures):
         tam_item = self.len_actions
@@ -280,7 +280,7 @@ class UCBBandit(Bandit):
         else:
             uncertainty = sqrt(self.param*tam_item*(successes+failures))
             reward = successes/(successes + failures)
-            actions = [ItemBandit(item, value = reward + uncertainty, count = successes+failures, reward = reward, uncertainty = uncertainty)]
+            actions = [ItemBandit(item, value = reward + uncertainty, count = successes+failures, reward = reward, uncertainty = uncertainty) for item in splitter.item_set]
         return sorted(actions)
 
     def update_item_info(self, item, count, reward, criteria):
@@ -309,7 +309,7 @@ class ThompsonSamplingBandit(Bandit):
     def __init__(self, splitter, criteria="mean", count_no_rating = True, alpha = 1, beta = 1):
         self.alpha = alpha
         self.beta = beta
-        super().__init__(splitter, criteria, count_no_rating = count_no_rating, alpha = alpha, beta = beta)
+        super().__init__(splitter, criteria = criteria, alpha = alpha, beta = beta, count_no_rating = count_no_rating)
 
     def update_item_info(self, item, count, reward, criteria):
         super().update_item_info(item, count, reward, criteria)

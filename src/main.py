@@ -6,6 +6,8 @@ if __name__ == "__main__":
     from numpy import arange
     from copy import deepcopy
     import sys
+    import os
+    import re
     import seaborn as sns
 
     alg = sys.argv[1]
@@ -56,7 +58,7 @@ if __name__ == "__main__":
                 bandit = UCBBandit(deepcopy(spl), param = UCB, alpha = alpha, beta = beta)
                 path = "../results/gridSearch/ucb/ucb"
             elif alg == "Thompson":
-                bandit = ThompsonSamplingBandit(deepcopy(spl), alpha = alpha, beta = beta)
+                bandit = ThompsonSamplingBandit(deepcopy(spl), alpha = alpha, beta = beta, count_no_rating = False)
                 path = "../results/gridSearch/thompson/thompson"
             bandit.output_to_file(path + "{0}_{1}_epoch_cm100.txt".format(alpha, beta),
                                   path + "{0}_{1}_recall_cm100.txt".format(alpha, beta))
@@ -68,5 +70,35 @@ if __name__ == "__main__":
             elif alg == "UCB":
                 bandit = UCBBandit(deepcopy(spl), param = UCB, alpha = alpha, beta = beta)
             elif alg == "Thompson":
-                bandit = ThompsonSamplingBandit(deepcopy(spl), alpha = alpha, beta = beta)
+                bandit = ThompsonSamplingBandit(deepcopy(spl), alpha = alpha, beta = beta, count_no_rating = False)
 
+            bandit.output_to_file(path + "{0}_{1}_epoch_cm100.txt".format(alpha, beta),
+                                  path + "{0}_{1}_recall_cm100.txt".format(alpha, beta))
+
+    elif action == "plot":
+        path = "../results/gridSearch/"
+        if alg == "Epsilon":
+            path += "eps/"
+        elif alg == "Thompson":
+            path += "thompson/"
+        elif alg == "UCB":
+            path += "ucb/"
+        path += "optimistic/"
+
+        files = os.listdir(path)
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        colors = sns.color_palette("hls", len(files))
+        ax.set_prop_cycle('color', colors)
+        exp = re.compile("[a-z]*(\w+?)_(\w+?)_")
+        for f in sorted( files ):
+            print(f)
+            gr = exp.match(f)
+            alpha = gr[1]
+            beta = gr[2]
+            plot_results_graph(path+f, "alpha={0}, beta={1}".format(alpha, beta))
+
+
+        plt.legend()
+        plt.savefig("../results/gridSearch/Recall"+ alg +".png")
+        plt.show()
