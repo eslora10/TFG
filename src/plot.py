@@ -42,8 +42,8 @@ def plot_results_graph(results_file, eps):
 
 if __name__=="__main__":
     fig = plt.figure()
-    files = ["eps0.1"] #"ts", "eps0.1", "ucb2"]#, "random"]
-    for crit in ["noRating", "Rating"]:
+    files = ["ucb"] #"ts", "eps0.1", "ucb2"]#, "random"]
+    for crit in ["noRating"]:#, "Rating"]:
         for f in files:
             res_file = "../results/" + f + "_recall_cm100_"+ crit + ".txt"
             plot_results_graph(res_file, f + crit)

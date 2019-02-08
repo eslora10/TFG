@@ -346,10 +346,10 @@ if __name__=="__main__":
     #bandit.output_to_file("../results/eps{0}_epoch_cm100_Rating.txt".format(eps),
     #                      "../results/eps{0}_recall_cm100_Rating.txt".format(eps))
 
-    #spl = Splitter("../data/ratings_binary.txt", " ")
-    #bandit = EpsilonGreedyBandit(spl, criteria="cummulative_mean", count_no_rating = False)
-    #bandit.output_to_file("../results/eps{0}_epoch_cm100_noRating.txt".format(eps),
-    #                      "../results/eps{0}_recall_cm100_noRating.txt".format(eps))
+    spl = Splitter("../data/ratings_binary.txt", " ")
+    bandit = UCBBandit(spl)
+    bandit.output_to_file("../results/ucb_epoch_cm100_Rating.txt",
+                          "../results/ucb_recall_cm100_Rating.txt")
 
     #spl = Splitter("../data/ratings_binary.txt", " ")
     #bandit = ThompsonSamplingBandit(spl, criteria="cummulative_mean")
