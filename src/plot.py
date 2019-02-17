@@ -42,24 +42,26 @@ def plot_results_graph(results_file, eps):
 
 if __name__=="__main__":
     fig = plt.figure()
-    files = ["ucb"] #"ts", "eps0.1", "ucb2"]#, "random"]
-    for crit in ["noRating"]:#, "Rating"]:
+    files = ["ucb2", "eps0.1"]#, "random"]
+    for crit in ["mean"]: #, "wmean"]:
         for f in files:
-            res_file = "../results/" + f + "_recall_cm100_"+ crit + ".txt"
+            res_file = "../results/" + f + "_recall_cm100.txt"
             plot_results_graph(res_file, f + crit)
 
     #plot_results_graph("../results/cm100/random_recall.txt", "random")
+    #plot_results_graph("../results/popularity_recall_cm100.txt", "popularity")
     plt.legend()
     plt.savefig("../results/Recall.png")
     plt.show()
 
-    #fig = plt.figure()
 
-    #for crit in ["noRating", "Rating"]:
-    #    for f in files:
-    #        res_file = "../results/cm100/" + f + "_epoch_cm100_" + crit + ".txt"
-    #        plot_results_scatter(res_file, f + crit)
-#
-#    plt.legend()
-#    plt.savefig("../results/Epoch.png")
+    fig = plt.figure()
+
+    for crit in ["mean", "wmean"]:
+        for f in files:
+            res_file = "../results/" + f + "_epoch_cm100.txt"
+            plot_results_scatter(res_file, f + crit)
+
+    plt.legend()
+    plt.savefig("../results/Epoch.png")
     #plt.show()
