@@ -31,10 +31,13 @@ def plot_results_graph(results_file, eps):
     with open(results_file) as infile:
         X = []
         Y = []
+        i = 0
         for line in infile:
-            li = line.strip('\n').split('\t')
-            X.append(int(li[0]))
-            Y.append(float(li[1]))
+            li = line.strip('\n')#.split('\t')
+            #X.append(int(li[0]))
+            X.append(i)
+            Y.append(float(li))
+            i+=1
 
         plt.plot(X, Y, label=eps)
         plt.xlabel("Epoch")
@@ -42,10 +45,11 @@ def plot_results_graph(results_file, eps):
 
 if __name__=="__main__":
     fig = plt.figure()
-    files = ["ucb2", "eps0.1"]#, "random"]
+    files = ["eps999", "ucb999"]#, "random"]
     for crit in ["mean"]: #, "wmean"]:
         for f in files:
             res_file = "../results/" + f + "_recall_cm100.txt"
+            print(res_file)
             plot_results_graph(res_file, f + crit)
 
     #plot_results_graph("../results/cm100/random_recall.txt", "random")
@@ -65,3 +69,24 @@ if __name__=="__main__":
     plt.legend()
     plt.savefig("../results/Epoch.png")
     #plt.show()
+
+    """
+    X = []
+    y = []
+    #plt.rc('text', usetex=True)
+    sns.set()
+    sns.set_context("paper")
+    with open("../results/gridSearch/eps/param/eps_param.txt", "r") as f:
+        for line in f:
+            parsed = line.strip("\n").split(",")
+            X.append(float(parsed[0]))
+            y.append(float(parsed[1]))
+
+    plt.scatter(X, y, color="magenta")
+    plt.plot(X, y, color="magenta")
+
+    plt.xlabel('epsilon')
+    plt.ylabel('recall=500')
+    plt.show()
+
+    """

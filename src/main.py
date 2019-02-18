@@ -15,7 +15,7 @@ if __name__ == "__main__":
     EPS = 0.1
     UCB = 2
 
-    spl = Splitter("../data/movieLens_binary.dat", " ")
+    spl = Splitter("../data/ratings.txt", " ")
 
     if action == "param":
         if alg == "Epsilon":
@@ -28,9 +28,9 @@ if __name__ == "__main__":
         elif alg == "UCB":
             values = [0.01, 0.1, 1, 2, 10, 100]
             for param in values:
-                bandit = UCBBandit(deepcopy( spl ), param = param)
-                bandit.output_to_file("../results/gridSearch/ucb/MovieLens/ucb{0}_epoch_cm100_wmean.txt".format(param),
-                                      "../results/gridSearch/ucb/MovieLens/ucb{0}_recall_cm100_wmean.txt".format(param))
+                bandit = UCBBandit(deepcopy( spl ),"../results/gridSearch/ucb/MovieLens/ucb{0}_recall_cm100_wmean.txt".format(param),  param = param)
+                #bandit.output_to_file("../results/gridSearch/ucb/cm100k/ucb{0}_epoch_cm100_wmean.txt".format(param),
+                #                      "../results/gridSearch/ucb/MovieLens/ucb{0}_recall_cm100_wmean.txt".format(param))
 
         elif alg == "Thompson":
             print("No param in Thompson")
@@ -74,10 +74,12 @@ if __name__ == "__main__":
         elif alg == "UCB":
             path += "ucb/"
 
-        path += sys.argv[3]+"/"
+        path += "cm100k/"+sys.argv[3]+"/"
 
         files = os.listdir(path)
         fig = plt.figure()
+        sns.set()
+        sns.set_context("paper")
         ax = fig.add_subplot(111)
         colors = sns.color_palette("hls", len(files))
         if sys.argv[3] == "optimistic":
@@ -93,11 +95,14 @@ if __name__ == "__main__":
             ax.set_prop_cycle('color', colors)
             exp = re.compile("[a-z]*([0-9]\.*[0-9]*)")
             for f in sorted( files ):
-                print(f)
-                gr = exp.match(f)
-                param = gr[1]
-                print(param)
-                plot_results_graph(path+f, "{0}".format(param))
+                try:
+                    print(f)
+                    gr = exp.match(f)
+                    param = gr[1]
+                    print(param)
+                    plot_results_graph(path+f, "{0}".format(param))
+                except:
+                    pass
 
 
 
