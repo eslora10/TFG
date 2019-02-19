@@ -19,7 +19,7 @@ if __name__ == "__main__":
 
     if action == "param":
         if alg == "Epsilon":
-            values = [0, 0.001, 0.01, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+            values = [0]#, 0.001, 0.01, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
             for eps in values:
                 bandit = EpsilonGreedyBandit(deepcopy(spl),"../results/gridSearch/eps/MovieLens/eps{0}_epoch_cm100_wmean.txt".format(eps), epsilon = eps, criteria = "cummulative_mean")
 
@@ -70,7 +70,7 @@ if __name__ == "__main__":
         elif alg == "UCB":
             path += "ucb/"
 
-        path += "cm100k/"+sys.argv[3]+"/"
+        path += "MovieLens/"#+sys.argv[3]+"/"
 
         files = os.listdir(path)
         fig = plt.figure()
