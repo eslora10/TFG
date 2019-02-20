@@ -88,6 +88,7 @@ class Bandit():
         self.cummulative_recall = [0]
         recall = 0
         while splitter.test_set:
+            ini = time.time()
             for user in splitter.user_set:
                 if user in splitter.test_set.keys():
                     item = self.select_item(splitter, user)
@@ -113,6 +114,9 @@ class Bandit():
                 self.time += 1
             #self.cummulative_recall.append(recall/len_test_ini)
             outfile.write("{0}\n".format(recall/len_test_ini))
+            print(len(self.actions))
+            fin = time.time()
+            print(fin -ini)
         outfile.close()
 
     def update_train_test(self, splitter, user, item, reward):
@@ -272,15 +276,13 @@ class UCBBandit(Bandit):
 
     def update_item_info(self, item, count, reward, criteria):
         super().update_item_info(item, count, reward, criteria)
-        item.uncertainty = sqrt(self.param*np.log10(self.time)/item.count)
-        item.value = item.reward + item.uncertainty # 1/count*((count-1)*value + reward) + uncertainty
 
         for item2 in self.actions:
-            if item2.item != item.item:
-                item2.uncertainty = sqrt(self.param*np.log10(self.time)/item2.count)
-                item2.value = item2.reward + item2.uncertainty
-        self.actions = sorted(self.actions)
+            item2.uncertainty = sqrt(self.param*np.log10(self.time)/item2.count)
+            item2.value = item2.reward + item2.uncertainty
+        #self.actions = sorted(self.actions)
 
+    """
     def select_item(self, splitter, user):
         i = 0
         item = self.actions[i]
@@ -289,11 +291,22 @@ class UCBBandit(Bandit):
             item = self.actions[i]
         self.actions.pop(i)
         return item
+    """
+    def select_item(self, splitter, user):
+        max_item = self.actions[0]
+        for item in self.actions[1:]:
+            if not (user in splitter.train_set.keys() and item.item in splitter.train_set[user]):
+                if item.value > max_item.value:
+                    max_item = item
+        self.removed = 1
+        return max_item
 
 class ThompsonSamplingBandit(Bandit):
     """
     """
     def __init__(self, splitter,outpath,  criteria="mean", alpha = 1, beta = 1, count_no_rating = True):
+        self.alpha = alpha
+        self.beta = beta
         super().__init__(splitter,outpath,  criteria)
 
     def update_item_info(self, item, count, reward, criteria):
@@ -301,6 +314,7 @@ class ThompsonSamplingBandit(Bandit):
         item.value = item.reward
         item.successes += reward
 
+    """
     def select_item(self, splitter, user):
         # Generate a random number following a beta distribution for each item
         sample = []
@@ -316,6 +330,17 @@ class ThompsonSamplingBandit(Bandit):
             item = sample[i][1]
         self.actions.remove(item)
         return item
+    """
+    def select_item(self, splitter, user):
+        max_item = self.actions[0]
+        max_val = np.random.beta(max_item.successes + self.alpha, max_item.count - max_item.successes + self.beta)
+        for item in self.actions[1:]:
+            if not (user in splitter.train_set.keys() and item.item in splitter.train_set[user]):
+                val = np.random.beta(item.successes + self.alpha, item.count - item.successes + self.beta)
+                if val > max_val:
+                    max_item = item
+        self.removed = 1
+        return max_item
 
 
 if __name__=="__main__":
