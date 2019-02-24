@@ -88,21 +88,20 @@ class Bandit():
         self.cummulative_recall = [0]
         recall = 0
         while splitter.test_set:
-            ini = time.time()
             for user in splitter.user_set:
                 if user in splitter.test_set.keys():
                     item = self.select_item(splitter, user)
                     # Remove the item from the ordered actions set
-                    item.count+=1
                     if item.item in splitter.test_set[user].keys():
-                        n = item.count
                         reward = splitter.test_set[user][item.item]
-                        self.update_item_info(item, n, reward, criteria)
+                        self.update_item_info(item, reward, criteria)
                         # Remove the user from the item_user set
                     else:
                         # In case we don't have info about the item we add it to the train
                         # set with reward=0
                         reward = 0
+                        if count_no_rating:
+                            self.update_item_info(item, reward, criteria)
                     # Update recall
                     recall += reward
                     # Update train and test
@@ -114,9 +113,6 @@ class Bandit():
                 self.time += 1
             #self.cummulative_recall.append(recall/len_test_ini)
             outfile.write("{0}\n".format(recall/len_test_ini))
-            print(len(self.actions))
-            fin = time.time()
-            print(fin -ini)
         outfile.close()
 
     def update_train_test(self, splitter, user, item, reward):
@@ -184,7 +180,7 @@ class Bandit():
         """
         pass
 
-    def update_item_info(self, item, count, reward, criteria):
+    def update_item_info(self, item, reward, criteria):
         """ Updates the item information each time an item has been chosen
 
         Args:
@@ -194,12 +190,14 @@ class Bandit():
             None
 
         """
+        item.successes += reward
+        item.count += 1
         if criteria == "mean":
-            item.reward = 1/count*((count-1)*item.reward + reward)
+            item.reward = item.successes /item.count
         elif criteria == "cummulative_mean":
             item.reward = 1/2*(item.reward + reward)
         else:
-            item.reward = criteria(count, item.reward, reward)
+            item.reward = criteria(item.reward, reward)
 
     def output_to_file(self, filepath, filepath_2):
         with open(filepath, 'w') as output:
@@ -216,9 +214,9 @@ class EpsilonGreedyBandit(Bandit):
     """
     """
 
-    def __init__(self, splitter, outpath, epsilon=0.1, criteria="mean", count_no_rating = True):
+    def __init__(self, splitter, outpath, epsilon=0.1, criteria="mean", count_no_rating = False):
         self.epsilon = epsilon
-        super().__init__(splitter, outpath, criteria=criteria)
+        super().__init__(splitter, outpath, criteria=criteria, count_no_rating = count_no_rating)
 
     def select_item(self, splitter, user):
         # Check if we have info about the item and if we haven't reccomended the item
@@ -243,15 +241,15 @@ class EpsilonGreedyBandit(Bandit):
         self.actions.pop(i)
         return item
 
-    def update_item_info(self, item, count, reward, criteria):
-        super().update_item_info(item, count, reward, criteria)
+    def update_item_info(self, item, reward, criteria):
+        super().update_item_info(item, reward, criteria)
         item.value = item.reward
 
 class UCBBandit(Bandit):
 
-    def __init__(self, splitter,outpath,  criteria="mean", param=2, count_no_rating = True):
+    def __init__(self, splitter,outpath,  criteria="mean", param=2, count_no_rating = False):
         self.param = param
-        super().__init__(splitter, outpath, criteria=criteria)
+        super().__init__(splitter, outpath, criteria=criteria, count_no_rating = count_no_rating)
 
     def init_items(self, splitter):
         tam_item = len(splitter.item_set)
@@ -274,8 +272,8 @@ class UCBBandit(Bandit):
             self.update_train_test(splitter, user, itemb, reward)
         self.actions = sorted(self.actions)
 
-    def update_item_info(self, item, count, reward, criteria):
-        super().update_item_info(item, count, reward, criteria)
+    def update_item_info(self, item, reward, criteria):
+        super().update_item_info(item, reward, criteria)
 
         for item2 in self.actions:
             item2.uncertainty = sqrt(self.param*np.log10(self.time)/item2.count)
@@ -307,12 +305,11 @@ class ThompsonSamplingBandit(Bandit):
     def __init__(self, splitter,outpath,  criteria="mean", alpha = 1, beta = 1, count_no_rating = True):
         self.alpha = alpha
         self.beta = beta
-        super().__init__(splitter,outpath,  criteria)
+        super().__init__(splitter,outpath,  criteria, count_no_rating = count_no_rating)
 
-    def update_item_info(self, item, count, reward, criteria):
-        super().update_item_info(item, count, reward, criteria)
+    def update_item_info(self, item, reward, criteria):
+        super().update_item_info(item, reward, criteria)
         item.value = item.reward
-        item.successes += reward
 
     """
     def select_item(self, splitter, user):
@@ -339,19 +336,6 @@ class ThompsonSamplingBandit(Bandit):
                 val = np.random.beta(item.successes + self.alpha, item.count - item.successes + self.beta)
                 if val > max_val:
                     max_item = item
+                    max_val = val
         self.removed = 1
         return max_item
-
-
-if __name__=="__main__":
-    from splitter import Splitter, PercentageSplitter
-    import matplotlib.pyplot as plt
-    import time
-
-    ini = time.time()
-    spl = Splitter("../data/ratings_binary.txt", " ")
-    bandit = ThompsonSamplingBandit(spl, "../results/ts999_recall_cm100.txt")
-    #bandit.output_to_file("../results/ucb2_epoch_cm100.txt",
-    #                      "../results/ucb2_recall_cm100.txt")
-    fin = time.time()
-    print(fin-ini)

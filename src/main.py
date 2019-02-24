@@ -15,16 +15,16 @@ if __name__ == "__main__":
     EPS = 0.1
     UCB = 2
 
-    spl = Splitter("../data/movieLens_binary.dat", " ")
+    spl = Splitter("../data/ratings_binary.txt", " ")
 
     if action == "param":
         if alg == "Epsilon":
-            values = [0]#, 0.001, 0.01, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+            values = [0, 0.001, 0.01, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
             for eps in values:
-                bandit = EpsilonGreedyBandit(deepcopy(spl),"../results/gridSearch/eps/MovieLens/eps{0}_epoch_cm100_wmean.txt".format(eps), epsilon = eps, criteria = "cummulative_mean")
+                bandit = EpsilonGreedyBandit(deepcopy(spl),"../results/gridSearch/eps/cm100k/eps{0}_epoch_cm100_wmean.txt".format(eps), epsilon = eps, criteria = "cummulative_mean")
 
         elif alg == "UCB":
-            values = [0.01, 0.1, 1, 2, 10, 100]
+            values = [0, 0.01,]# 0.1, 1, 2, 10, 100]
             for param in values:
                 bandit = UCBBandit(deepcopy( spl ),"../results/gridSearch/ucb/MovieLens/ucb{0}_recall_cm100_wmean.txt".format(param),  param = param)
 
@@ -32,6 +32,7 @@ if __name__ == "__main__":
             print("No param in Thompson")
 
     elif action == "optimistic":
+        """
         alpha = 1
         values = range(1, 11)
         for beta in values:
@@ -43,10 +44,11 @@ if __name__ == "__main__":
 #                path = "../results/gridSearch/ucb/ucb"
 #            elif alg == "Thompson":
             if alg == "Thompson":
-                bandit = ThompsonSamplingBandit(deepcopy(spl), alpha = alpha, beta = beta, count_no_rating = False)
-                path = "../results/gridSearch/thompson/thompson"
-            bandit.output_to_file(path + "{0}_{1}_epoch_cm100.txt".format(alpha, beta),
-                                  path + "{0}_{1}_recall_cm100.txt".format(alpha, beta))
+                bandit = ThompsonSamplingBandit(deepcopy(spl),"../results/gridSearch/thompson/cm100k/ts{0}_{1}_epoch_cm100.txt".format(alpha, beta), alpha = alpha, beta = beta, count_no_rating = False)
+                #path = "../results/gridSearch/thompson/thompson"
+            #bandit.output_to_file(path + "{0}_{1}_epoch_cm100.txt".format(alpha, beta),
+            #                      path + "{0}_{1}_recall_cm100.txt".format(alpha, beta))
+        """
         beta = 1
         values = range(2, 11)
         for alpha in values:
@@ -55,11 +57,12 @@ if __name__ == "__main__":
 #            elif alg == "UCB":
 #                bandit = UCBBandit(deepcopy(spl), param = UCB, alpha = alpha, beta = beta)
 #            elif alg == "Thompson":
-            if alg == "Thomspon":
-                bandit = ThompsonSamplingBandit(deepcopy(spl), alpha = alpha, beta = beta, count_no_rating = False)
+            if alg == "Thompson":
+                print(alpha, beta )
+                bandit = ThompsonSamplingBandit(deepcopy(spl),"../results/gridSearch/thompson/cm100k/ts{0}_{1}_epoch_cm100.txt".format(alpha, beta), alpha = alpha, beta = beta, count_no_rating = False)
 
-            bandit.output_to_file(path + "{0}_{1}_epoch_cm100.txt".format(alpha, beta),
-                                  path + "{0}_{1}_recall_cm100.txt".format(alpha, beta))
+            #bandit.output_to_file(path + "{0}_{1}_epoch_cm100.txt".format(alpha, beta),
+            #                      path + "{0}_{1}_recall_cm100.txt".format(alpha, beta))
 
     elif action == "plot":
         path = "../results/gridSearch/"
@@ -99,7 +102,6 @@ if __name__ == "__main__":
                     plot_results_graph(path+f, "{0}".format(param))
                 except:
                     pass
-
 
 
         plt.legend()
