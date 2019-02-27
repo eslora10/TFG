@@ -64,7 +64,7 @@ class Bandit():
 
     """
 
-    def __init__(self, splitter, outpath, criteria="mean", count_no_rating = True):
+    def __init__(self, splitter, outpath, criteria="mean", count_no_rating = True, social = False):
         """ Creates a new Bandit and perfoms the algorithm.
 
         Note:
@@ -80,13 +80,14 @@ class Bandit():
         """
         outfile = open(outpath, "w")
         self.removed = 0
+        self.social = social
 
         self.time = 0
         self.init_items(splitter)
         self.len_actions = len(self.actions)
         len_test_ini = splitter.test_len
         self.cummulative_recall = [0]
-        recall = 0
+        self.recall = 0
         while splitter.test_set:
             for user in splitter.user_set:
                 if user in splitter.test_set.keys():
@@ -103,7 +104,7 @@ class Bandit():
                         if count_no_rating:
                             self.update_item_info(item, reward, criteria)
                     # Update recall
-                    recall += reward
+                    self.recall += reward
                     # Update train and test
                     self.update_train_test(splitter, user, item, reward)
                     # Reinsert the item in its new position
@@ -112,7 +113,8 @@ class Bandit():
                     self.removed = 0
                 self.time += 1
             #self.cummulative_recall.append(recall/len_test_ini)
-            outfile.write("{0}\n".format(recall/len_test_ini))
+            outfile.write("{0}\n".format(self.recall/len_test_ini))
+            print(len(self.actions))
         outfile.close()
 
     def update_train_test(self, splitter, user, item, reward):
@@ -136,6 +138,14 @@ class Bandit():
                 splitter.test_set.pop(user)
         except:
             pass
+        if self.social:
+            try:
+                splitter.test_set[item.item].pop(user)
+                if not splitter.test_set[item.item]:
+                    splitter.test_set.pop(item.item)
+                #self.recall += 1
+            except:
+                pass
         # Insert the item in the train_set
         try:
             splitter.train_set[user][item.item] = reward
@@ -151,6 +161,15 @@ class Bandit():
             self.removed = 1
         except KeyError:
             pass
+        if self.social:
+            try:
+                splitter.item_users[user].pop(item.item)
+                if not splitter.item_users[user]:
+                    self.actions.remove(ItemBandit(user))
+            except ValueError:
+                pass
+            except KeyError:
+                pass
 
     def init_items(self, splitter):
         """ Creates the ItemBandit list to use during the algorithm.
@@ -162,7 +181,7 @@ class Bandit():
             A sorted list which contains the ItemBanit objects.
 
         """
-        self.actions =  sorted([ItemBandit(item) for item in splitter.item_set])
+        self.actions =  sorted([ItemBandit(item) for item in splitter.item_users.keys()]) #splitter.item_set])
 
     def select_item(self, splitter, user):
         """ Selects and item from the action list following the each bandit specific strategy.
@@ -199,6 +218,19 @@ class Bandit():
         else:
             item.reward = criteria(item.reward, reward)
 
+    def follow_back(self, splitter, item, user):
+        """ In a social network dataset, checks if the item is following the user
+
+        Args:
+            splitter (:obj: `Splitter`): Object which contains both train and test
+            item (int): item to check
+            user (int): user to check
+        """
+        if self.social:
+            return item == user or item in splitter.train_set.keys() and user in splitter.train_set[item]
+        else:
+            return False
+
     def output_to_file(self, filepath, filepath_2):
         with open(filepath, 'w') as output:
             output.write("Total times: {0}\n".format(self.time))
@@ -214,9 +246,9 @@ class EpsilonGreedyBandit(Bandit):
     """
     """
 
-    def __init__(self, splitter, outpath, epsilon=0.1, criteria="mean", count_no_rating = False):
+    def __init__(self, splitter, outpath, epsilon=0.1, criteria="mean", count_no_rating = False, social = False):
         self.epsilon = epsilon
-        super().__init__(splitter, outpath, criteria=criteria, count_no_rating = count_no_rating)
+        super().__init__(splitter, outpath, criteria=criteria, count_no_rating = count_no_rating, social=social)
 
     def select_item(self, splitter, user):
         # Check if we have info about the item and if we haven't reccomended the item
@@ -226,7 +258,8 @@ class EpsilonGreedyBandit(Bandit):
             # Exploitation
             i = 0
             item = self.actions[i]
-            while user in splitter.train_set.keys() and item.item in splitter.train_set[user]:
+            while user in splitter.train_set.keys() and item.item in splitter.train_set[user]\
+                  or self.follow_back(splitter, item.item, user):
                 i+=1
                 item = self.actions[i]
         else:
@@ -234,7 +267,8 @@ class EpsilonGreedyBandit(Bandit):
             #item = random.sample(self.actions, 1)[0]
             i = np.random.randint(len(self.actions))
             item = self.actions[i]
-            while user in splitter.train_set.keys() and item.item in splitter.train_set[user]:
+            while user in splitter.train_set.keys() and item.item in splitter.train_set[user]\
+                  or self.follow_back(splitter, item.item, user):
                 #item = random.sample(self.actions, 1)[0]
                 i = np.random.randint(len(self.actions))
                 item = self.actions[i]
@@ -247,9 +281,9 @@ class EpsilonGreedyBandit(Bandit):
 
 class UCBBandit(Bandit):
 
-    def __init__(self, splitter,outpath,  criteria="mean", param=2, count_no_rating = False):
+    def __init__(self, splitter,outpath,  criteria="mean", param=2, count_no_rating = False, social = False):
         self.param = param
-        super().__init__(splitter, outpath, criteria=criteria, count_no_rating = count_no_rating)
+        super().__init__(splitter, outpath, criteria=criteria, count_no_rating = count_no_rating, social = social)
 
     def init_items(self, splitter):
         tam_item = len(splitter.item_set)
@@ -270,7 +304,7 @@ class UCBBandit(Bandit):
             itemb = ItemBandit(item, value = reward + uncertainty, count = 1, reward = reward, uncertainty = uncertainty)
             self.actions.append(itemb)
             self.update_train_test(splitter, user, itemb, reward)
-        self.actions = sorted(self.actions)
+        #self.actions = sorted(self.actions)
 
     def update_item_info(self, item, reward, criteria):
         super().update_item_info(item, reward, criteria)
@@ -293,7 +327,8 @@ class UCBBandit(Bandit):
     def select_item(self, splitter, user):
         max_item = self.actions[0]
         for item in self.actions[1:]:
-            if not (user in splitter.train_set.keys() and item.item in splitter.train_set[user]):
+            if not (user in splitter.train_set.keys() and item.item in splitter.train_set[user]\
+                    or self.follow_back(splitter, item.item, user)):
                 if item.value > max_item.value:
                     max_item = item
         self.removed = 1
@@ -302,10 +337,10 @@ class UCBBandit(Bandit):
 class ThompsonSamplingBandit(Bandit):
     """
     """
-    def __init__(self, splitter,outpath,  criteria="mean", alpha = 1, beta = 1, count_no_rating = True):
+    def __init__(self, splitter,outpath,  criteria="mean", alpha = 1, beta = 1, count_no_rating = True, social = False):
         self.alpha = alpha
         self.beta = beta
-        super().__init__(splitter,outpath,  criteria, count_no_rating = count_no_rating)
+        super().__init__(splitter,outpath,  criteria, count_no_rating = count_no_rating, social = social)
 
     def update_item_info(self, item, reward, criteria):
         super().update_item_info(item, reward, criteria)
@@ -332,10 +367,22 @@ class ThompsonSamplingBandit(Bandit):
         max_item = self.actions[0]
         max_val = np.random.beta(max_item.successes + self.alpha, max_item.count - max_item.successes + self.beta)
         for item in self.actions[1:]:
-            if not (user in splitter.train_set.keys() and item.item in splitter.train_set[user]):
+            if not (user in splitter.train_set.keys() and item.item in splitter.train_set[user])\
+                    or self.follow_back(splitter, item.item, user):
                 val = np.random.beta(item.successes + self.alpha, item.count - item.successes + self.beta)
                 if val > max_val:
                     max_item = item
                     max_val = val
         self.removed = 1
         return max_item
+
+if __name__=="__main__":
+    from splitter import Splitter
+    from plot import plot_results_graph
+    import matplotlib.pyplot as plt
+
+    spl = Splitter("../data/ratings_binary.txt", separator=' ')#, social = True)
+    bandit = EpsilonGreedyBandit(spl, "results_twitter")#, social = True)
+    print(len(bandit.actions))
+    plot_results_graph("results_twitter", "twitter")
+    plt.show()

@@ -15,7 +15,7 @@ if __name__ == "__main__":
     EPS = 0.1
     UCB = 2
 
-    spl = Splitter("../data/ratings_binary.txt", " ")
+    spl = Splitter("../data/movieLens_binary.dat", " ")
 
     if action == "param":
         if alg == "Epsilon":
@@ -24,9 +24,9 @@ if __name__ == "__main__":
                 bandit = EpsilonGreedyBandit(deepcopy(spl),"../results/gridSearch/eps/cm100k/eps{0}_epoch_cm100_wmean.txt".format(eps), epsilon = eps, criteria = "cummulative_mean")
 
         elif alg == "UCB":
-            values = [0, 0.01,]# 0.1, 1, 2, 10, 100]
+            values = [0, ]#0.01,]# 0.1, 1, 2, 10, 100]
             for param in values:
-                bandit = UCBBandit(deepcopy( spl ),"../results/gridSearch/ucb/MovieLens/ucb{0}_recall_cm100_wmean.txt".format(param),  param = param)
+                bandit = UCBBandit(deepcopy( spl ),"../results/gridSearch/ucb/MovieLens/ucb{0}_recall_cm100_miniwmean.txt".format(param),  param = param, criteria = "cummulative_mean")
 
         elif alg == "Thompson":
             print("No param in Thompson")

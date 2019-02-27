@@ -1,10 +1,11 @@
 import numpy as np
+from copy import deepcopy
 
 class Splitter(object):
     """
 
     """
-    def __init__(self, path, separator='\t'):
+    def __init__(self, path, separator='\t', social = False):
         self.train_len = 0
         self.test_len = 0
         self.user_set = set()
@@ -19,29 +20,38 @@ class Splitter(object):
                 user = int(inter[0])
                 item = int(inter[1])
                 value = int(inter[2])
+                if social:
+                    value = 1 # In datasets from twitter the last value is the timestamp
                 self.user_set.add(user)
                 self.item_set.add(item)
-                if item not in self.item_users:
-                    self.item_users[item] = {user: value} #self.item_users[item] = set([user])
-                else:
-                    self.item_users[item][user] = value #self.item_users[item].add(user)
+                if item != user:
+                    if item not in self.item_users:
+                        self.item_users[item] = {user: value} #self.item_users[item] = set([user])
+                    else:
+                        self.item_users[item][user] = value #self.item_users[item].add(user)
 
-                if self.condition():
-                    try:
-                        if item not in self.train_set[user].keys():
-                            self.train_set[user][item] = value
-                    except KeyError:
-                        self.train_set[user] = {item: value}
-                    if value:
-                        self.train_len += 1
-                else:
-                    try:
-                        if item not in self.test_set[user].keys():
-                            self.test_set[user][item] = value
-                    except KeyError:
-                        self.test_set[user] = {item: value}
-                    if value:
-                        self.test_len += 1
+                    if self.condition():
+                        try:
+                            if item not in self.train_set[user].keys():
+                                self.train_set[user][item] = value
+                        except KeyError:
+                            self.train_set[user] = {item: value}
+                        if value:
+                            self.train_len += 1
+                    else:
+                        try:
+                            if item not in self.test_set[user].keys():
+                                self.test_set[user][item] = value
+                                if item not in self.test_set or user not in self.test_set[item].keys():
+                                    self.test_len += value
+                        except KeyError:
+                            self.test_set[user] = {item: value}
+                            if item not in self.test_set or user not in self.test_set[item].keys():
+                                self.test_len += value
+            if social:
+                # In social networks both item and users are the same
+                self.user_set = self.user_set.union(self.item_set)
+                self.item_set = deepcopy(self.user_set)
 
 
     def condition(self):

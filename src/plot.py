@@ -44,6 +44,7 @@ def plot_results_graph(results_file, eps):
         plt.ylabel("Cummulative recall")
 
 if __name__=="__main__":
+    """
     fig = plt.figure()
     files = ["eps999", "ucb999", "ts999", "random"]#, "random"]
     for crit in ["mean"]: #, "wmean"]:
@@ -75,7 +76,7 @@ if __name__=="__main__":
     #plt.rc('text', usetex=True)
     sns.set()
     sns.set_context("paper")
-    with open("../results/gridSearch/eps/param/eps_param.txt", "r") as f:
+    with open("../results/gridSearch/eps/MovieLens/eps_movieLens_cut.txt", "r") as f:
         for line in f:
             parsed = line.strip("\n").split(",")
             X.append(float(parsed[0]))
@@ -88,4 +89,3 @@ if __name__=="__main__":
     plt.ylabel('recall=500')
     plt.show()
 
-    """
