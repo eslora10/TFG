@@ -15,13 +15,13 @@ if __name__ == "__main__":
     EPS = 0.1
     UCB = 2
 
-    spl = Splitter("../data/movieLens_binary.dat", " ")
+    spl = Splitter("../data/interactions-graph-200tweets.tsv", "\t", social = True)
 
     if action == "param":
         if alg == "Epsilon":
             values = [0, 0.001, 0.01, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
             for eps in values:
-                bandit = EpsilonGreedyBandit(deepcopy(spl),"../results/gridSearch/eps/cm100k/eps{0}_epoch_cm100_wmean.txt".format(eps), epsilon = eps, criteria = "cummulative_mean")
+                bandit = EpsilonGreedyBandit(deepcopy(spl),"../results/gridSearch/eps/twitter/eps{0}_epoch_cm100_wmean.txt".format(eps), epsilon = eps, criteria = "cummulative_mean", social=True)
 
         elif alg == "UCB":
             values = [0, ]#0.01,]# 0.1, 1, 2, 10, 100]
@@ -80,7 +80,7 @@ if __name__ == "__main__":
         sns.set()
         sns.set_context("paper")
         ax = fig.add_subplot(111)
-        colors = sns.color_palette("hls", len(files))
+        colors = sns.color_palette("hls", len(files)+1)
         if sys.argv[3] == "optimistic":
             ax.set_prop_cycle('color', colors)
             exp = re.compile("[a-z]*(\w+?)_(\w+?)_")
@@ -103,6 +103,7 @@ if __name__ == "__main__":
                 except:
                     pass
 
+        plot_results_graph("../results/gridSearch/eps/MovieLens/random.txt", "random")
 
         plt.legend()
         plt.savefig("../results/gridSearch/Recall"+ alg +".png")

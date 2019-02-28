@@ -114,7 +114,7 @@ class Bandit():
                 self.time += 1
             #self.cummulative_recall.append(recall/len_test_ini)
             outfile.write("{0}\n".format(self.recall/len_test_ini))
-            print(len(self.actions))
+            #print(len(self.actions))
         outfile.close()
 
     def update_train_test(self, splitter, user, item, reward):
@@ -301,6 +301,7 @@ class UCBBandit(Bandit):
             else:
                 reward = 0
 
+            # TODO: MIRAR ACIERTOS
             itemb = ItemBandit(item, value = reward + uncertainty, count = 1, reward = reward, uncertainty = uncertainty)
             self.actions.append(itemb)
             self.update_train_test(splitter, user, itemb, reward)
@@ -330,7 +331,7 @@ class UCBBandit(Bandit):
             if not (user in splitter.train_set.keys() and item.item in splitter.train_set[user]\
                     or self.follow_back(splitter, item.item, user)):
                 if item.value > max_item.value:
-                    max_item = item
+                   max_item = item
         self.removed = 1
         return max_item
 
@@ -381,8 +382,8 @@ if __name__=="__main__":
     from plot import plot_results_graph
     import matplotlib.pyplot as plt
 
-    spl = Splitter("../data/ratings_binary.txt", separator=' ')#, social = True)
-    bandit = EpsilonGreedyBandit(spl, "results_twitter")#, social = True)
+    spl = Splitter("../data/interactions-graph-200tweets.tsv", separator='\t', social = True)
+    bandit = EpsilonGreedyBandit(spl, "results_twitter", social = True)
     print(len(bandit.actions))
     plot_results_graph("results_twitter", "twitter")
     plt.show()
