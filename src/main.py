@@ -15,7 +15,7 @@ if __name__ == "__main__":
     EPS = 0.1
     UCB = 2
 
-    spl = Splitter("../data/interactions-graph-200tweets.tsv", "\t", social = True)
+    spl = Splitter("../data/movieLens_binary.dat", " ")
 
     if action == "param":
         if alg == "Epsilon":
@@ -59,7 +59,7 @@ if __name__ == "__main__":
 #            elif alg == "Thompson":
             if alg == "Thompson":
                 print(alpha, beta )
-                bandit = ThompsonSamplingBandit(deepcopy(spl),"../results/gridSearch/thompson/cm100k/ts{0}_{1}_epoch_cm100.txt".format(alpha, beta), alpha = alpha, beta = beta, count_no_rating = False)
+                bandit = ThompsonSamplingBandit(deepcopy(spl),"../results/gridSearch/thompson/movieLens/ts{0}_{1}_epoch_cm100.txt".format(alpha, beta), alpha = alpha, beta = beta, count_no_rating = False)
 
             #bandit.output_to_file(path + "{0}_{1}_epoch_cm100.txt".format(alpha, beta),
             #                      path + "{0}_{1}_recall_cm100.txt".format(alpha, beta))
@@ -73,7 +73,7 @@ if __name__ == "__main__":
         elif alg == "UCB":
             path += "ucb/"
 
-        path += "MovieLens/"#+sys.argv[3]+"/"
+        path += "twitter/"#+sys.argv[3]+"/"
 
         files = os.listdir(path)
         fig = plt.figure()
@@ -103,7 +103,7 @@ if __name__ == "__main__":
                 except:
                     pass
 
-        plot_results_graph("../results/gridSearch/eps/MovieLens/random.txt", "random")
+        #plot_results_graph("../results/gridSearch/eps/MovieLens/random.txt", "random")
 
         plt.legend()
         plt.savefig("../results/gridSearch/Recall"+ alg +".png")

@@ -33,15 +33,19 @@ def plot_results_graph(results_file, eps):
         Y = []
         i = 0
         for line in infile:
-            li = line.strip('\n')#.split('\t')
-            #X.append(int(li[0]))
             X.append(i)
-            Y.append(float(li))
+            try:
+                li = line.strip('\n')#.split('\t')
+                #X.append(int(li[0]))
+                Y.append(float(li))
+            except ValueError:
+                li = li.split("\t")
+                Y.append(float(li[1]))
             i+=1
 
         plt.plot(X, Y, label=eps)
-        plt.xlabel("Epoch")
-        plt.ylabel("Cummulative recall")
+        plt.xlabel("Época")
+        plt.ylabel("Recall acumulado")
 
 if __name__=="__main__":
     """
