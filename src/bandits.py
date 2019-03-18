@@ -23,14 +23,14 @@ class ItemBandit():
         uncertainty (float): how sure we are the item value is correct
         successes (int): number of successful recomendations
     """
-    def __init__(self, item, value = 0, count = 0, time = 0, reward = 0, uncertainty = 0):
+    def __init__(self, item, value = 0, successes = 0, count = 0, time = 0, reward = 0, uncertainty = 0):
         self.item = item
         self.value = value
         self.count = count
         self.time = time
         self.reward = reward
         self.uncertainty = uncertainty
-        self.successes = 0
+        self.successes = successes
 
     def __lt__(self, other):
         return self.value > other.value
@@ -64,7 +64,7 @@ class Bandit():
 
     """
 
-    def __init__(self, splitter, outpath, criteria="mean", count_no_rating = True, social = False):
+    def __init__(self, splitter, outpath, criteria="mean", count_no_rating = True, social = False, alpha = 0, beta = 0):
         """ Creates a new Bandit and perfoms the algorithm.
 
         Note:
@@ -83,7 +83,7 @@ class Bandit():
         self.social = social
 
         self.time = 0
-        self.init_items(splitter)
+        self.init_items(splitter, alpha, beta)
         self.len_actions = len(self.actions)
         len_test_ini = splitter.test_len
         self.cummulative_recall = [0]
@@ -171,7 +171,7 @@ class Bandit():
             except KeyError:
                 pass
 
-    def init_items(self, splitter):
+    def init_items(self, splitter, alpha, beta):
         """ Creates the ItemBandit list to use during the algorithm.
 
         Args:
@@ -181,7 +181,13 @@ class Bandit():
             A sorted list which contains the ItemBanit objects.
 
         """
-        self.actions =  sorted([ItemBandit(item) for item in splitter.item_users.keys()]) #splitter.item_set])
+        count = alpha + beta
+        if count != 0:
+            reward = alpha/count
+        else:
+            reward = 0
+        self.actions =  sorted([ItemBandit(item, successes = alpha, count = count, reward = reward) for item in splitter.item_users.keys()]) #splitter.item_set])
+
 
     def select_item(self, splitter, user):
         """ Selects and item from the action list following the each bandit specific strategy.
@@ -246,9 +252,9 @@ class EpsilonGreedyBandit(Bandit):
     """
     """
 
-    def __init__(self, splitter, outpath, epsilon=0.1, criteria="mean", count_no_rating = False, social = False):
+    def __init__(self, splitter, outpath, epsilon=0.1, criteria="mean", count_no_rating = False, social = False, alpha = 0, beta = 0):
         self.epsilon = epsilon
-        super().__init__(splitter, outpath, criteria=criteria, count_no_rating = count_no_rating, social=social)
+        super().__init__(splitter, outpath, criteria=criteria, count_no_rating = count_no_rating, social=social, alpha = alpha, beta = beta)
 
     def select_item(self, splitter, user):
         # Check if we have info about the item and if we haven't reccomended the item
@@ -281,28 +287,28 @@ class EpsilonGreedyBandit(Bandit):
 
 class UCBBandit(Bandit):
 
-    def __init__(self, splitter,outpath,  criteria="mean", param=2, count_no_rating = False, social = False):
+    def __init__(self, splitter,outpath,  criteria="mean", param=2, count_no_rating = False, social = False, alpha = 0, beta = 0):
         self.param = param
-        super().__init__(splitter, outpath, criteria=criteria, count_no_rating = count_no_rating, social = social)
+        super().__init__(splitter, outpath, criteria=criteria, count_no_rating = count_no_rating, social = social, alpha = alpha, beta = beta)
 
-    def init_items(self, splitter):
+    def init_items(self, splitter, alpha, beta):
         tam_item = len(splitter.item_set)
-        uncertainty = sqrt(self.param*np.log10(tam_item)) # After doing this initialation this would be the uncertainty
+        count = alpha + beta + 1
+        uncertainty = sqrt(self.param*np.log10(tam_item*count)) # After doing this initialation this would be the uncertainty
+        self.time = tam_item*count
         self.actions = []
         items = list(splitter.item_set)
         users = list(splitter.user_set)
         tam_users = len(users)
         for i in range(tam_item):
-            self.time += 1
             item = items[i]
             user = users[i%tam_users]
+            val = 0
             if item in splitter.test_set[user].keys():
-                reward = splitter.test_set[user][item]
-            else:
-                reward = 0
-
+                val = splitter.test_set[user][item]
+            reward = (val + alpha)/count
             # TODO: MIRAR ACIERTOS
-            itemb = ItemBandit(item, value = reward + uncertainty, count = 1, reward = reward, uncertainty = uncertainty)
+            itemb = ItemBandit(item, value = reward + uncertainty, count = count, reward = reward, uncertainty = uncertainty, successes = alpha)
             self.actions.append(itemb)
             self.update_train_test(splitter, user, itemb, reward)
         #self.actions = sorted(self.actions)
@@ -382,8 +388,8 @@ if __name__=="__main__":
     from plot import plot_results_graph
     import matplotlib.pyplot as plt
 
-    spl = Splitter("../data/interactions-graph-200tweets.tsv", separator='\t', social = True)
-    bandit = EpsilonGreedyBandit(spl, "results_twitter", social = True)
+    spl = Splitter("../data/movieLens_binary.dat", separator=' ')
+    bandit = UCBBandit(spl, "prueba", param = 0)
     print(len(bandit.actions))
-    plot_results_graph("results_twitter", "twitter")
+    plot_results_graph("prueba", "ucb")
     plt.show()

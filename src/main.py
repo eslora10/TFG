@@ -24,45 +24,28 @@ if __name__ == "__main__":
                 bandit = EpsilonGreedyBandit(deepcopy(spl),"../results/gridSearch/eps/twitter/eps{0}_epoch_cm100_wmean.txt".format(eps), epsilon = eps, criteria = "cummulative_mean", social=True)
 
         elif alg == "UCB":
-            values = [0, ]#0.01,]# 0.1, 1, 2, 10, 100]
+            values = [0, 0.01, 0.1, 1, 2, 10, 100]
             for param in values:
-                bandit = UCBBandit(deepcopy( spl ),"../results/gridSearch/ucb/MovieLens/ucb{0}_recall_cm100_miniwmean.txt".format(param),  param = param, criteria = "cummulative_mean")
+                bandit = UCBBandit(deepcopy( spl ),"../results/gridSearch/ucb/cm100k/param/ucb{0}_recall_cm100_miniwmean.txt".format(param),  param = param)
 
         elif alg == "Thompson":
             print("No param in Thompson")
 
     elif action == "optimistic":
-        """
         alpha = 1
         values = range(1, 11)
-        for beta in values:
-#            if alg == "Epsilon":
-#                bandit = EpsilonGreedyBandit(deepcopy(spl), epsilon = EPS, alpha = alpha, beta = beta, criter#ia = "cummulative_mean")
-#                path = "../results/gridSearch/eps/eps"
-#            elif alg == "UCB":
-#                bandit = UCBBandit(deepcopy(spl), param = UCB, alpha = alpha, beta = beta)
-#                path = "../results/gridSearch/ucb/ucb"
-#            elif alg == "Thompson":
-            if alg == "Thompson":
-                bandit = ThompsonSamplingBandit(deepcopy(spl),"../results/gridSearch/thompson/cm100k/ts{0}_{1}_epoch_cm100.txt".format(alpha, beta), alpha = alpha, beta = beta, count_no_rating = False)
-                #path = "../results/gridSearch/thompson/thompson"
-            #bandit.output_to_file(path + "{0}_{1}_epoch_cm100.txt".format(alpha, beta),
-            #                      path + "{0}_{1}_recall_cm100.txt".format(alpha, beta))
-        """
-        beta = 1
-        values = range(2, 11)
         for alpha in values:
-#            if alg == "Epsilon":
-#                bandit = EpsilonGreedyBandit(deepcopy(spl), epsilon = EPS, alpha = alpha, beta = beta, criter#ia = "cummulative_mean")
-#            elif alg == "UCB":
-#                bandit = UCBBandit(deepcopy(spl), param = UCB, alpha = alpha, beta = beta)
-#            elif alg == "Thompson":
-            if alg == "Thompson":
-                print(alpha, beta )
-                bandit = ThompsonSamplingBandit(deepcopy(spl),"../results/gridSearch/thompson/movieLens/ts{0}_{1}_epoch_cm100.txt".format(alpha, beta), alpha = alpha, beta = beta, count_no_rating = False)
+            for beta in values:
+                if alg == "Epsilon":
+                    path = "../results/gridSearch/eps/movieLens/optimistic/eps{0}_{1}.txt"
+                    bandit = EpsilonGreedyBandit(deepcopy(spl),path.format(alpha, beta), epsilon = EPS, alpha = alpha, beta = beta, criteria = "cummulative_mean")
+                elif alg == "UCB":
+                    path = "../results/gridSearch/ucb/cm100k/optimistic/ucb{0}_{1}.txt"
+                    bandit = UCBBandit(deepcopy(spl), path.format(alpha, beta), param = UCB, alpha = alpha, beta = beta)
+                    path = "../results/gridSearch/ucb/ucb"
+                elif alg == "Thompson":
+                    bandit = ThompsonSamplingBandit(deepcopy(spl),"../results/gridSearch/thompson/cm100k/ts{0}_{1}_epoch_cm100.txt".format(alpha, beta), alpha = alpha, beta = beta, count_no_rating = False)
 
-            #bandit.output_to_file(path + "{0}_{1}_epoch_cm100.txt".format(alpha, beta),
-            #                      path + "{0}_{1}_recall_cm100.txt".format(alpha, beta))
 
     elif action == "plot":
         path = "../results/gridSearch/"
@@ -73,7 +56,7 @@ if __name__ == "__main__":
         elif alg == "UCB":
             path += "ucb/"
 
-        path += "twitter/"#+sys.argv[3]+"/"
+        path += "movieLens/optimistic/"#+sys.argv[3]+"/"
 
         files = os.listdir(path)
         fig = plt.figure()
@@ -83,8 +66,8 @@ if __name__ == "__main__":
         colors = sns.color_palette("hls", len(files)+1)
         if sys.argv[3] == "optimistic":
             ax.set_prop_cycle('color', colors)
-            exp = re.compile("[a-z]*(\w+?)_(\w+?)_")
-            for f in sorted( files ):
+            exp = re.compile("[a-z]*(\w+?)_(\w+?).")
+            for f in sorted( files )[:-1]:
                 print(f)
                 gr = exp.match(f)
                 alpha = gr[1]
