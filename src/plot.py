@@ -43,7 +43,7 @@ def plot_results_graph(results_file, eps):
                 Y.append(float(li[1]))
             i+=1
 
-        plt.plot(X, Y, label=eps)
+        plt.plot(X, Y, label=eps, linewidth = .8)
         plt.xlabel("Época")
         plt.ylabel("Recall acumulado")
 
