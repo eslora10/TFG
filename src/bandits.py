@@ -388,8 +388,8 @@ if __name__=="__main__":
     from plot import plot_results_graph
     import matplotlib.pyplot as plt
 
-    spl = Splitter("../data/interactions-graph-200tweets_no_reps.tsv", separator='\t', social = True)
-    bandit = EpsilonGreedyBandit(spl, "prueba", social = True)
+    spl = Splitter("../data/movieLens_binary_mini.dat", separator=" ")
+    bandit = UCBBandit(spl, "mini", param=0, criteria="mean")
     print(len(bandit.actions))
-    plot_results_graph("prueba", "ucb")
+    plot_results_graph("mini", "eps")
     plt.show()

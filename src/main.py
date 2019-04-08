@@ -21,7 +21,7 @@ if __name__ == "__main__":
         if alg == "Epsilon":
             values = [0, 0.001, 0.01, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
             for eps in values:
-                bandit = EpsilonGreedyBandit(deepcopy(spl),"../results/gridSearch/eps/twitter/eps{0}_epoch_cm100_wmean.txt".format(eps), epsilon = eps, criteria = "cummulative_mean", social=True)
+                bandit = EpsilonGreedyBandit(deepcopy(spl),"../results/gridSearch/eps/movieLens/param/eps{0}.txt".format(eps), epsilon = eps, criteria = "cummulative_mean")
 
         elif alg == "UCB":
             values = [0, 0.01, 0.1, 1, 2, 10, 100]

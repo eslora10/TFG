@@ -5,14 +5,16 @@ from plot import plot_results_graph
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-nameparam = r"$\gamma$"
-#nameparam = r"$\varepsilon$"
+data = "twitter"
+#nameparam = r"$\gamma$"
+nameparam = r"$\varepsilon$"
 fontsize=12
-path = "../results/gridSearch/ucb/cm100k/param/ucb{0}_recall_cm100_miniwmean.txt"
-#path = "../results/gridSearch/eps/cm100k/param/eps{0}_recall_cm100_wmean.txt"
-alg = "UCB"
-#values = [0.0, 0.1, 0.2, 0.4, 0.6, 0.8, 1]
-values = [0.01, 0.1, 1, 2, 10, 100]
+#path = "../results/gridSearch/ucb/"+data+"/param/ucb{0}.txt"
+path = "../results/gridSearch/eps/"+data+"/param/eps{0}_norm.txt"
+alg = "Eps"
+
+values = [0, 0.001, 0.01, 0.2, 0.4, 0.6, 0.8, 1]
+#values = [0.01, 0.1, 1, 2, 10, 100]
 fig = plt.figure()
 sns.set()
 sns.set_context("paper")
@@ -24,13 +26,11 @@ ax.tick_params(axis='both', which='minor', labelsize=fontsize)
 ax.set_prop_cycle('color', colors)
 for value in values:
     filename = path.format(value)
-    if value == 0.01:
-        value = 0
     plot_results_graph(filename, nameparam+"={0}".format(value))
 
-plot_results_graph("../results/gridSearch/random_cm100k.txt", "random")
+#plot_results_graph("../results/gridSearch/random_movieLens.txt", "random")
 plt.legend(fontsize=fontsize)
-plt.savefig("../results/memoria/cm100k/Recall"+ alg +".png")
+plt.savefig("../results/memoria/"+data+"/Recall"+ alg +".png")
 plt.show()
 plt.close()
 
@@ -46,24 +46,29 @@ ax.tick_params(axis='both', which='minor', labelsize=fontsize)
 ax.set_prop_cycle('color', colors)
 X = []
 Y = []
-path = "../results/gridSearch/ucb/cm100k/param/ucb_cut.txt"
-#path = "../results/gridSearch/eps/cm100k/param/eps_param.txt"
+#path = "../results/gridSearch/ucb/"+data+"/param/ucb_cut.txt"
+path = "../results/gridSearch/eps/"+data+"/param/eps_cut.txt"
 with open(path) as input_file:
     for line in input_file:
         spl = line.strip("\n").split(",")
         x = float(spl[0])
         y = float(spl[1])
-        X.append(x)
-        Y.append(y)
-        plt.scatter([x], [y], s=50)
+        if x in values:
+            print(x)
+            X.append(x)
+            Y.append(y)
+            plt.scatter([x], [y], s=50)
 plt.plot(X, Y, color="black", linewidth = 1, zorder = -1)
+#plt.xlim((-0.001,0.011))
+#plt.ylim((0.89,0.9))
 plt.xlabel(nameparam, fontsize=fontsize)
 plt.ylabel("Recall mitad", fontsize=fontsize)
-plt.savefig("../results/memoria/cm100k/RecallMitad"+ alg +".png")
+plt.savefig("../results/memoria/"+data+"/RecallMitad"+ alg +".png")
 plt.show()
+"""
 #path = "../results/gridSearch/thompson/cm100k/ts_cut.txt"
-path = "../results/gridSearch/ucb/cm100k/optimistic/ucb_cut.txt"
-#path = "../results/gridSearch/eps/cm100k/optimistic/eps_cut.txt"
+path = "../results/gridSearch/ucb/movieLens/optimistic/ucb_cut.txt"
+#path = "../results/gridSearch/eps/movieLens/optimistic/eps_cut.txt"
 with open(path, "r") as entrada:
     Z = []
     i = 0
@@ -98,5 +103,6 @@ plt.ylabel(r"$\alpha$", fontsize=fontsize)
 plt.xlabel(r"$\beta$", fontsize=fontsize)
 plt.xlim((1,10))
 plt.ylim((1,10))
-plt.savefig("../results/memoria/cm100k/Mapa"+ alg +".png")
+plt.savefig("../results/memoria/movieLens/Mapa"+ alg +".png")
 plt.show()
+"""

@@ -33,6 +33,8 @@ def plot_results_graph(results_file, eps):
         Y = []
         i = 0
         for line in infile:
+            if i == 4950:
+                break
             X.append(i)
             try:
                 li = line.strip('\n')#.split('\t')
