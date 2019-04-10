@@ -33,16 +33,18 @@ def plot_results_graph(results_file, eps):
         Y = []
         i = 0
         for line in infile:
-            if i == 4950:
-                break
-            X.append(i)
             try:
                 li = line.strip('\n')#.split('\t')
                 #X.append(int(li[0]))
                 Y.append(float(li))
+                X.append(i)
             except ValueError:
                 li = li.split("\t")
-                Y.append(float(li[1]))
+                try:
+                    Y.append(float(li[1]))
+                    X.append(i)
+                except:
+                    pass
             i+=1
 
         plt.plot(X, Y, label=eps, linewidth = 1)
