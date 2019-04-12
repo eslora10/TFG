@@ -3,4 +3,4 @@ data/*.tsv
 *.pdf
 src/__pycache__/*
 *.pyc
-results/*.txt
+results/gridSearch/*
