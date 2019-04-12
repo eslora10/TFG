@@ -24,27 +24,38 @@ def plot_results_scatter(results_file, eps, num_items = None):
         plt.xlabel("Value")
         plt.ylabel("Epoch empty")
 
-def plot_results_graph(results_file, eps):
+def plot_results_graph(results_file, eps, random=None):
     sns.set()
     sns.axes_style("darkgrid")
     sns.set_context("paper")
     with open(results_file) as infile:
+        if random:
+            randomfile = open(random)
         X = []
         Y = []
         i = 0
         for line in infile:
             try:
                 li = line.strip('\n')#.split('\t')
-                #X.append(int(li[0]))
-                Y.append(float(li))
-                X.append(i)
+                y = float(li)
+                #Y.append(float(li))
+                #X.append(i)
             except ValueError:
                 li = li.split("\t")
                 try:
-                    Y.append(float(li[1]))
-                    X.append(i)
+                    y = float(li[1])
+                    #Y.append(float(li[1]))
+                    #X.append(i)
                 except:
                     pass
+            if random:
+                li = randomfile.readline().strip("\n")#.split("\t")
+                try:
+                    y -= float(li)
+                except:
+                    break
+            Y.append(y)
+            X.append(i)
             i+=1
 
         plt.plot(X, Y, label=eps, linewidth = 1)
