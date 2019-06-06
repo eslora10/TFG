@@ -5,7 +5,7 @@ from plot import plot_results_graph
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-data = "movieLens"
+data = "twitter"
 #nameparam = r"$\gamma$"
 nameparam = r"$\varepsilon$"
 fontsize=12
@@ -13,6 +13,7 @@ fontsize=12
 path = "../results/gridSearch/eps/"+data+"/param/eps{0}.txt"
 alg = "Eps"
 
+"""
 values = [0, 0.001, 0.01, 0.2, 0.4, 0.6, 0.8, 1]
 #values = [0.01, 0.1, 1, 2, 10, 100]
 fig = plt.figure()
@@ -65,6 +66,7 @@ plt.xlabel(nameparam, fontsize=fontsize)
 plt.ylabel("Recall mitad", fontsize=fontsize)
 plt.savefig("../results/memoria/"+data+"/RecallMitad"+ alg +".png")
 plt.show()
+"""
 #path = "../results/gridSearch/thompson/cm100k/ts_cut.txt"
 path = "../results/gridSearch/eps/"+data+"/optimistic/eps_cut.txt"
 #path = "../results/gridSearch/eps/movieLens/optimistic/eps_cut.txt"
@@ -102,5 +104,5 @@ plt.ylabel(r"$\alpha$", fontsize=fontsize)
 plt.xlabel(r"$\beta$", fontsize=fontsize)
 plt.xlim((1,10))
 plt.ylim((1,10))
-plt.savefig("../results/memoria/movieLens/Mapa"+ alg +".png")
+plt.savefig("../results/memoria/"+data+"/Mapa"+ alg +".png")
 plt.show()
