@@ -6,16 +6,15 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 data = "twitter"
-#nameparam = r"$\gamma$"
-nameparam = r"$\varepsilon$"
+nameparam = r"$\gamma$"
+#nameparam = r"$\varepsilon$"
 fontsize=12
-#path = "../results/gridSearch/ucb/"+data+"/param/ucb{0}.txt"
-path = "../results/gridSearch/eps/"+data+"/param/eps{0}.txt"
-alg = "Eps"
+path = "../results/gridSearch/ucb/"+data+"/param/ucb{0}_norm.txt"
+#path = "../results/gridSearch/eps/"+data+"/param/eps{0}.txt"
+alg = "UCB"
 
-"""
-values = [0, 0.001, 0.01, 0.2, 0.4, 0.6, 0.8, 1]
-#values = [0.01, 0.1, 1, 2, 10, 100]
+#values = [0, 0.001, 0.01, 0.2, 0.4, 0.6, 0.8, 1]
+values = [0.001, 0.01, 0.1, 1.0, 2.0, 10.0, 100.0]
 fig = plt.figure()
 sns.set()
 sns.set_context("paper")
@@ -30,6 +29,7 @@ for value in values:
     plot_results_graph(filename, nameparam+"={0}".format(value))
 
 #plot_results_graph("../results/gridSearch/random_movieLens.txt", "random")
+
 plt.legend(fontsize=fontsize)
 plt.savefig("../results/memoria/"+data+"/Recall"+ alg +".png")
 plt.show()
@@ -106,3 +106,4 @@ plt.xlim((1,10))
 plt.ylim((1,10))
 plt.savefig("../results/memoria/"+data+"/Mapa"+ alg +".png")
 plt.show()
+"""

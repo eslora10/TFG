@@ -1,7 +1,7 @@
-alg="thompson"
+alg="ucb"
 dataset="twitter"
-n
-file="../results/gridSearch/"$alg"/"$dataset"/optimistic/ts1_1.txt"
+
+file="../results/gridSearch/"$alg"/"$dataset"/optimistic/"$alg"1_1.txt"
 a=$(wc -l $file)
 num_lines=$(echo $a|cut -d' ' -f1)
 
@@ -9,7 +9,7 @@ for i in {1..10}
 do
     for j in {1..10}
 do
-    p=$(head -$((num_lines / 2)) "../results/gridSearch/"$alg"/"$dataset"/optimistic/ts"$i"_"$j".txt" | tail -1)
+    p=$(head -$((num_lines / 2)) "../results/gridSearch/"$alg"/"$dataset"/optimistic/"$alg""$i"_"$j"_norm.txt" | tail -1)
     echo "$i,$j,$(echo $p|cut -d' ' -f2)"
 done
 done
