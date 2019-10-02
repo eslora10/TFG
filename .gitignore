@@ -1,4 +1,6 @@
-*.txt
+data/*.txt
+data/*.tsv
 *.pdf
 src/__pycache__/*
 *.pyc
+results/gridSearch/*
